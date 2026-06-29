@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Sri Lakshmi Crackers",
+    "slug": "crackers",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": { "backgroundColor": "#1a1208" },
+    "ios": { "supportsTablet": true, "infoPlist": { "NSPhotoLibraryUsageDescription": "Upload your payment screenshot." } },
+    "android": { "permissions": ["READ_EXTERNAL_STORAGE"] }
+  }
+}

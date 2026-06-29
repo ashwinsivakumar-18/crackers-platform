@@ -1,0 +1,24 @@
+const { Router } = require('express');
+const multer = require('multer');
+const c = require('./crm.controller');
+const s = require('./crm.schemas');
+const { validate } = require('../../middleware/validate');
+const { authenticate, requireStaff } = require('../../middleware/auth');
+const { asyncHandler } = require('../../utils/asyncHandler');
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+const staff = [authenticate, requireStaff];
+const r = Router();
+r.get('/customers', ...staff, validate({ query: s.listQuery }), asyncHandler(c.customers));
+r.post('/customers', ...staff, validate({ body: s.customerCreate }), asyncHandler(c.createCustomer));
+r.post('/customers/import', ...staff, upload.single('file'), asyncHandler(c.importCustomers));
+r.get('/customers/:id', ...staff, asyncHandler(c.customer));
+r.patch('/customers/:id', ...staff, validate({ body: s.customerUpdate }), asyncHandler(c.updateCustomer));
+r.post('/customers/:id/communications', ...staff, validate({ body: s.comm }), asyncHandler(c.logCommunication));
+r.post('/customers/:id/follow-ups', ...staff, validate({ body: s.followUp }), asyncHandler(c.createFollowUp));
+r.get('/statuses', ...staff, asyncHandler(c.statuses));
+r.post('/statuses', ...staff, validate({ body: s.statusCreate }), asyncHandler(c.createStatus));
+r.post('/statuses/reorder', ...staff, validate({ body: s.reorder }), asyncHandler(c.reorderStatuses));
+r.patch('/statuses/:id', ...staff, validate({ body: s.statusUpdate }), asyncHandler(c.updateStatus));
+r.delete('/statuses/:id', ...staff, asyncHandler(c.deleteStatus));
+module.exports = r;

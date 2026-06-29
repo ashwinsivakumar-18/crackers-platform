@@ -1,0 +1,15 @@
+{
+  "name": "crackers-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Fireworks/crackers e-commerce — Node/Express + MongoDB + React + React Native (JavaScript)",
+  "workspaces": ["packages/*", "apps/api", "apps/admin", "apps/storefront", "apps/crm"],
+  "scripts": {
+    "dev:api": "npm run dev -w apps/api",
+    "dev:worker": "npm run worker -w apps/api",
+    "dev:admin": "npm run dev -w apps/admin",
+    "dev:storefront": "npm run dev -w apps/storefront",
+    "dev:crm": "npm run dev -w apps/crm",
+    "seed": "npm run seed -w apps/api"
+  }
+}

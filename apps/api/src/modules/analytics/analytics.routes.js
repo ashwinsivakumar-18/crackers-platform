@@ -1,0 +1,10 @@
+const { Router } = require('express');
+const c = require('./analytics.controller');
+const { authenticate, requireStaff } = require('../../middleware/auth');
+const { asyncHandler } = require('../../utils/asyncHandler');
+const staff = [authenticate, requireStaff];
+const r = Router();
+r.get('/overview', ...staff, asyncHandler(c.overview));
+r.get('/revenue', ...staff, asyncHandler(c.revenue));
+r.get('/top-products', ...staff, asyncHandler(c.topProducts));
+module.exports = r;

@@ -1,0 +1,13 @@
+{
+  "name": "@crackers/crm",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite --port 5175 --host", "build": "vite build", "preview": "vite preview --port 5175" },
+  "dependencies": {
+    "@crackers/api-client": "*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.400.0"
+  },
+  "devDependencies": { "@vitejs/plugin-react": "^4.3.1", "vite": "^5.3.1" }
+}

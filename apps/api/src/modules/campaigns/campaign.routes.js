@@ -1,0 +1,13 @@
+const { Router } = require('express');
+const c = require('./campaign.controller');
+const s = require('./campaign.schemas');
+const { validate } = require('../../middleware/validate');
+const { authenticate, requireStaff } = require('../../middleware/auth');
+const { asyncHandler } = require('../../utils/asyncHandler');
+const staff = [authenticate, requireStaff];
+const r = Router();
+r.get('/', ...staff, validate({ query: s.listQuery }), asyncHandler(c.list));
+r.post('/', ...staff, validate({ body: s.createSchema }), asyncHandler(c.create));
+r.post('/preview', ...staff, validate({ body: s.previewSchema }), asyncHandler(c.preview));
+r.post('/:id/send', ...staff, asyncHandler(c.send));
+module.exports = r;

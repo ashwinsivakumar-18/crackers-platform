@@ -1,0 +1,37 @@
+{
+  "name": "@crackers/api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Crackers platform backend — Node + Express + MongoDB (JavaScript)",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "worker": "nodemon src/queue/worker.js",
+    "worker:prod": "node src/queue/worker.js",
+    "seed": "node scripts/seed.js"
+  },
+  "dependencies": {
+    "argon2": "^0.40.1",
+    "bullmq": "^5.7.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "rate-limit-redis": "^4.2.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8",
+    "@aws-sdk/client-s3": "^3.583.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
