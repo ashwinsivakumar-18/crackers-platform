@@ -24,7 +24,16 @@ const crmService = {
   async customer(cid) {
     const c = await Customer.findById(cid).populate('statusId');
     if (!c) throw ApiError.notFound('Customer not found');
-    const x = id(c); x.status = c.statusId ? id(c.statusId) : null;
+    const x = id(c);
+    x.status = c.statusId ? id(c.statusId) : null;
+    x.isBuyer = !!c.userId;                      // logged-in buyer vs uploaded contact
+    if (c.userId) {
+      const { Order } = require('../../models');
+      const orders = await Order.find({ userId: c.userId }).sort({ createdAt: -1 }).limit(10).lean();
+      x.orders = orders.map((o) => ({ id: String(o._id), orderNumber: o.orderNumber, total: o.total, status: o.status, placedAt: o.placedAt }));
+    } else {
+      x.orders = [];
+    }
     return { customer: x };
   },
   async createCustomer(body) { return { customer: id(await Customer.create({ ...body, mobile: normMobile(body.mobile) })) }; },
@@ -44,7 +53,7 @@ const crmService = {
         if (!/^[6-9]\d{9}$/.test(mob)) { failed++; continue; }
         if (seen.has(mob) || await Customer.exists({ mobile: mob })) { duplicates++; continue; }
         seen.add(mob);
-        await Customer.create({ name: row.name || row.Name || 'Customer', mobile: mob, email: row.email || row.Email, city: row.city || row.City, source: 'IMPORT' });
+        await Customer.create({ name: row.name || row.Name || mob, mobile: mob, email: row.email || row.Email || undefined, city: row.city || row.City || undefined, source: 'IMPORT' });
         imported++;
       } catch { failed++; }
     }

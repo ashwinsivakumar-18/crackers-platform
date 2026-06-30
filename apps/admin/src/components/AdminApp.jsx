@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, ShieldCheck, ReceiptText, Boxes, Warehouse, Users, Megaphone, Sparkles, LogOut, Bell } from
+  LayoutDashboard, ShieldCheck, ReceiptText, Boxes, Warehouse, Users, Tags, Megaphone, Sparkles, Settings as SettingsIcon, LogOut, Bell } from
 'lucide-react';
 import { api } from '../lib/api';
 import { LivePill } from './ui';
@@ -12,6 +12,8 @@ import Orders from './views/Orders';
 import Inventory from './views/Inventory';
 import Catalog from './views/Catalog';
 import Customers from './views/Customers';
+import Statuses from './views/Statuses';
+import Settings from './views/Settings';
 import Campaigns from './views/Campaigns';
 
 
@@ -23,6 +25,7 @@ const NAV = [
 { k: 'inventory', label: 'Inventory', icon: Warehouse },
 { k: 'catalog', label: 'Catalog', icon: Boxes },
 { k: 'customers', label: 'Customers', icon: Users },
+{ k: 'statuses', label: 'Statuses', icon: Tags },
 { k: 'campaigns', label: 'Campaigns', icon: Megaphone }];
 
 
@@ -33,6 +36,7 @@ const SUBTITLE = {
   inventory: 'Categories, products, images and pricing',
   catalog: 'Products, pricing and stock',
   customers: 'Your customer book',
+  statuses: 'Customizable customer stages',
   campaigns: 'Reach customers on WhatsApp, email and push'
 };
 
@@ -108,6 +112,8 @@ export default function AdminApp() {
           {view === 'inventory' && <Inventory />}
           {view === 'catalog' && <Catalog />}
           {view === 'customers' && <Customers />}
+          {view === 'statuses' && <Statuses />}
+          {view === 'settings' && <Settings />}
           {view === 'campaigns' && <Campaigns />}
         </div>
       </main>

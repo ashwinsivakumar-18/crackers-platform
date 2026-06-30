@@ -6,4 +6,5 @@ module.exports = {
   ...require('./crm.model'),
   ...require('./campaign.model'),
   ...require('./misc.model'),
+  ...require('./settings.model'),
 };

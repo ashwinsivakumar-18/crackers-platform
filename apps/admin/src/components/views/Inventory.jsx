@@ -27,13 +27,6 @@ export default function Inventory() {
   const activeCat = selected ?? categories[0]?.id ?? null;
   const inCat = useMemo(() => all.filter((p) => p.categoryId === activeCat), [all, activeCat]);
 
-  // Inventory totals (actual vs offer) across everything currently loaded.
-  const totals = useMemo(() => {
-    const mrp = all.reduce((s, p) => s + actualOf(p) * (p.stock ?? 0), 0);
-    const offer = all.reduce((s, p) => s + sellOf(p) * (p.stock ?? 0), 0);
-    return { count: all.length, mrp, offer, saved: mrp - offer };
-  }, [all]);
-
   const countFor = (id) => all.filter((p) => p.categoryId === id).length;
   const activeCategory = categories.find((c) => c.id === activeCat) ?? null;
 
@@ -43,13 +36,6 @@ export default function Inventory() {
 
   return (
     <div className="stack">
-      {/* totals: actual price vs offer price */}
-      <div className="inv-summary">
-        <div className="inv-card"><div className="l">Products</div><div className="v">{totals.count}</div></div>
-        <div className="inv-card"><div className="l">Total at MRP (actual)</div><div className="v">{rupee(totals.mrp)}</div></div>
-        <div className="inv-card accent"><div className="l">Total at offer price</div><div className="v">{rupee(totals.offer)}</div></div>
-        <div className="inv-card green"><div className="l">Customer savings</div><div className="v">{rupee(totals.saved)}</div></div>
-      </div>
 
       <div className="inv-layout">
         {/* categories */}
@@ -183,6 +169,7 @@ function ProductModal({ categoryId, product, onClose, onSaved
   const [sku, setSku] = useState(product?.sku ?? '');
   const [mrp, setMrp] = useState(String(product?.mrp ?? ''));
   const [pct, setPct] = useState(String(product ? pctOf(product) : ''));
+  const [cost, setCost] = useState(String(product?.costPrice ?? ''));
   const [stock, setStock] = useState(String(product?.stock ?? ''));
   const [image, setImage] = useState(thumbOf(product ?? {}) ?? null);
   const [busy, setBusy] = useState(false);
@@ -191,6 +178,8 @@ function ProductModal({ categoryId, product, onClose, onSaved
   const mrpN = Number(mrp) || 0;
   const pctN = Math.min(100, Number(pct) || 0);
   const offer = offerOf(mrpN, pctN);
+  const costN = Number(cost) || 0;
+  const profitEach = offer - costN;
   const valid = name.trim() && sku.trim() && mrpN > 0;
 
   const save = async () => {
@@ -200,6 +189,7 @@ function ProductModal({ categoryId, product, onClose, onSaved
       sku: sku.trim(),
       categoryId,
       mrp: mrpN,
+      costPrice: costN,
       stock: Number(stock) || 0,
       discountType: pctN > 0 ? 'PERCENT' : 'NONE',
       discountPercent: pctN > 0 ? pctN : 0,
@@ -233,7 +223,10 @@ function ProductModal({ categoryId, product, onClose, onSaved
             <div><div className="field-label">Discount %</div><input className="field mono" value={pct} onChange={(e) => setPct(e.target.value.replace(/\D/g, ''))} placeholder="40" /></div>
           </div>
 
-          <div><div className="field-label">Stock</div><input className="field mono" value={stock} onChange={(e) => setStock(e.target.value.replace(/\D/g, ''))} placeholder="100" /></div>
+          <div className="row-fields">
+            <div><div className="field-label">Cost price (₹) — for profit</div><input className="field mono" value={cost} onChange={(e) => setCost(e.target.value.replace(/\D/g, ''))} placeholder="120" /></div>
+            <div><div className="field-label">Stock</div><input className="field mono" value={stock} onChange={(e) => setStock(e.target.value.replace(/\D/g, ''))} placeholder="100" /></div>
+          </div>
 
           {/* live actual vs offer price */}
           <div className="offer-live">
@@ -241,6 +234,7 @@ function ProductModal({ categoryId, product, onClose, onSaved
             {pctN > 0 && <span className="was">{rupee(mrpN)}</span>}
             {pctN > 0 && <span className="pct">Save {rupee(mrpN - offer)} ({pctN}%)</span>}
           </div>
+          {costN > 0 && <p className="muted sm" style={{ marginTop: 6 }}>Est. margin at this price: {rupee(profitEach)}/unit. Actual profit is taken from each order's bill.</p>}
 
           {err && <p style={{ color: 'var(--ember)', fontSize: 13 }}>{err}</p>}
           <button className="btn btn-ember wide" disabled={!valid || busy} onClick={save}>

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { theme, rupee } from '../theme';
 import { useCart } from '../state/cart';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onWishlist }) {
   const cart = useCart();
   const qty = cart.quantityOf(product.id);
   const sell = product.display ? product.display.sellingPrice : product.sellingPrice;
@@ -11,7 +11,10 @@ export default function ProductCard({ product }) {
   const off = product.display ? product.display.savedPercent : 0;
   return (
     <View style={s.card}>
-      <View style={s.thumb}>{off > 0 && <Text style={s.off}>{off}% off</Text>}</View>
+      <View style={s.thumb}>
+        {onWishlist && <TouchableOpacity style={s.heart} onPress={() => onWishlist(product)}><Text style={{ fontSize: 14 }}>🤍</Text></TouchableOpacity>}
+        {off > 0 && <Text style={s.off}>{off}% off</Text>}
+      </View>
       <Text style={s.name} numberOfLines={2}>{product.name}</Text>
       <View style={s.priceRow}>
         <Text style={s.now}>{rupee(sell)}</Text>
@@ -32,6 +35,7 @@ export default function ProductCard({ product }) {
 const s = StyleSheet.create({
   card: { flex: 1, margin: 6, backgroundColor: theme.white, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: theme.line },
   thumb: { height: 90, borderRadius: 10, backgroundColor: '#F0C24B', marginBottom: 8, justifyContent: 'flex-start', alignItems: 'flex-end', padding: 6 },
+  heart: { position: 'absolute', top: 6, left: 6, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.85)', alignItems: 'center', justifyContent: 'center' },
   off: { backgroundColor: theme.ember, color: '#fff', fontSize: 10, fontWeight: '700', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, overflow: 'hidden' },
   name: { fontWeight: '600', fontSize: 13, color: theme.ink, minHeight: 34 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 4 },

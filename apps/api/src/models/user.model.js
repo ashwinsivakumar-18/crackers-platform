@@ -13,6 +13,8 @@ const userSchema = new Schema({
   role: { type: String, default: 'CUSTOMER' },
   permissions: { type: [String], default: [] },
   addresses: [addressSchema],
+  location: { lat: Number, lng: Number, line1: String, line2: String, city: String, state: String, pincode: String },
+  wishlists: { type: [{ name: String, productIds: [{ type: Schema.Types.ObjectId, ref: 'Product' }] }], default: [] },
 }, { timestamps: true });
 
 module.exports = { User: model('User', userSchema) };

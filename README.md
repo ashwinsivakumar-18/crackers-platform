@@ -1,4 +1,3 @@
-# crackers-E-commerce
 # Crackers Platform (JavaScript stack)
 
 Fireworks/crackers e-commerce, no payment gateway: customers pay by UPI/bank transfer,
@@ -11,9 +10,8 @@ React Native (Expo).
 crackers-platform/
 ├── apps/
 │   ├── api/          Express + Mongoose backend (JavaScript)
-│   ├── admin/        React (Vite) — ops console + inventory + verify + campaigns
+│   ├── admin/        React (Vite) — ops, inventory, orders+profit+tracking, CRM (customers/statuses), campaigns
 │   ├── storefront/   React (Vite) — customer shop
-│   ├── crm/          React (Vite) — customers, statuses, campaigns
 │   └── mobile/       React Native (Expo) — customer app
 └── packages/
     └── api-client/   shared JS client used by the 3 web apps
@@ -37,7 +35,6 @@ npm run dev:api                   # http://localhost:4000  (worker: npm run dev:
 # 3) web apps (each in its own terminal)
 npm run dev:storefront            # http://localhost:5173
 npm run dev:admin                 # http://localhost:5174  (login 9000000000 / ChangeMe@123)
-npm run dev:crm                   # http://localhost:5175
 
 # 4) mobile
 cd apps/mobile && npm install && npm start   # Expo — scan QR with Expo Go

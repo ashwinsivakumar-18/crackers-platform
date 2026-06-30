@@ -31,7 +31,7 @@ Make MongoDB/Redis/MinIO passwords match across the URI and the compose variable
 ## 5. HTTPS certificate (one time)
 ```bash
 sudo apt-get update && sudo apt-get install -y certbot
-sudo certbot certonly --standalone -d yourstore.in -d www.yourstore.in -d admin.yourstore.in -d crm.yourstore.in -d api.yourstore.in
+sudo certbot certonly --standalone -d yourstore.in -d www.yourstore.in -d admin.yourstore.in -d api.yourstore.in
 ```
 
 ## 6. Start everything (one command)
@@ -46,7 +46,7 @@ docker compose -f docker-compose.prod.yml exec api npm run seed
 ```
 Open `https://admin.yourstore.in`, log in `9000000000 / ChangeMe@123`, change the password.
 
-Live: storefront `https://yourstore.in`, admin `https://admin.yourstore.in`, crm `https://crm.yourstore.in`.
+Live: storefront `https://yourstore.in`, admin `https://admin.yourstore.in`.
 
 ## Day-to-day
 ```bash

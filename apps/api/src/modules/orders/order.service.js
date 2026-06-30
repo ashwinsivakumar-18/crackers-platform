@@ -19,7 +19,8 @@ const orderService = {
       if (!p) throw ApiError.badRequest(`Product unavailable: ${line.productId}`);
       if (p.stock < line.quantity) throw ApiError.badRequest(`Not enough stock for ${p.name}`);
       const unit = p.sellingPrice;
-      items.push({ productId: p._id, productName: p.name, sku: p.sku, quantity: line.quantity, unitPrice: unit, lineTotal: unit * line.quantity });
+      const cost = p.costPrice || 0;
+      items.push({ productId: p._id, productName: p.name, sku: p.sku, quantity: line.quantity, unitPrice: unit, costPrice: cost, lineTotal: unit * line.quantity });
       subtotal += unit * line.quantity;
     }
 
@@ -35,9 +36,25 @@ const orderService = {
     }
 
     const deliveryFee = body.deliveryType === 'STORE_PICKUP' ? 0 : subtotal > 3000 ? 0 : 80;
+    // Profit comes straight from this order's billed lines, never from current price.
+    const profit = items.reduce((s2, it) => s2 + (it.unitPrice - (it.costPrice || 0)) * it.quantity, 0);
+
+    // Make sure this buyer shows up in admin's CRM (linked by mobile), with their saved location.
+    try {
+      const { User, Customer } = require('../../models');
+      const u = await User.findById(userId).lean();
+      if (u) {
+        await Customer.updateOne(
+          { mobile: u.mobile },
+          { $setOnInsert: { name: u.name || 'Customer', mobile: u.mobile, source: 'ORDER' }, $set: { userId: u._id, ...(u.location ? { location: u.location, city: u.location.city, state: u.location.state } : {}) } },
+          { upsert: true },
+        );
+      }
+    } catch (e) { /* non-fatal */ }
+
     const order = await Order.create({
       orderNumber: generateOrderNumber(), userId, items, subtotal, deliveryFee, total: subtotal + deliveryFee,
-      status: 'PENDING_PAYMENT', deliveryType: body.deliveryType, address: body.address, pincode: body.pincode, notes: body.notes,
+      status: 'PENDING_PAYMENT', deliveryType: body.deliveryType, address: body.address, pincode: body.pincode, notes: body.notes, profit,
       statusHistory: [{ status: 'PENDING_PAYMENT' }],
     });
     return { order: shape(order) };
@@ -62,6 +79,43 @@ const orderService = {
     if (decision === 'APPROVE') { proof.status = 'APPROVED'; order.status = 'PAYMENT_APPROVED'; }
     else { proof.status = 'REJECTED'; order.status = 'PENDING_PAYMENT'; }
     order.statusHistory.push({ status: order.status, note });
+    await order.save();
+    return { order: shape(order) };
+  },
+
+  // Admin edits a billed unit price on an order -> recompute that line + order profit from the bill.
+  async updateItemPrice(orderId, index, unitPrice) {
+    const order = await Order.findById(orderId);
+    if (!order) throw ApiError.notFound('Order not found');
+    const it = order.items[index];
+    if (!it) throw ApiError.badRequest('Invalid item');
+    it.unitPrice = unitPrice;
+    it.lineTotal = unitPrice * it.quantity;
+    order.subtotal = order.items.reduce((s2, x) => s2 + x.lineTotal, 0);
+    order.total = order.subtotal + (order.deliveryFee || 0);
+    order.profit = order.items.reduce((s2, x) => s2 + (x.unitPrice - (x.costPrice || 0)) * x.quantity, 0);
+    await order.save();
+    return { order: shape(order) };
+  },
+
+  // Admin sets the final bill charges (delivery, packing, any extras) -> recompute total.
+  async setCharges(orderId, { deliveryFee, packingFee, extraCharges }) {
+    const order = await Order.findById(orderId);
+    if (!order) throw ApiError.notFound('Order not found');
+    if (deliveryFee != null) order.deliveryFee = deliveryFee;
+    if (packingFee != null) order.packingFee = packingFee;
+    if (Array.isArray(extraCharges)) order.extraCharges = extraCharges;
+    const extra = (order.extraCharges || []).reduce((s2, c) => s2 + (c.amount || 0), 0);
+    order.total = (order.subtotal || 0) + (order.deliveryFee || 0) + (order.packingFee || 0) + extra;
+    await order.save();
+    return { order: shape(order) };
+  },
+
+  // Admin adds a customer-facing tracking checkpoint (reflected on the customer's truck timeline).
+  async addTrackingStep(orderId, { label, place, note }) {
+    const order = await Order.findById(orderId);
+    if (!order) throw ApiError.notFound('Order not found');
+    order.trackingSteps.push({ label, place, note, at: new Date() });
     await order.save();
     return { order: shape(order) };
   },

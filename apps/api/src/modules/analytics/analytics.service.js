@@ -4,13 +4,13 @@ const analyticsService = {
   async overview() {
     const approved = ['PAYMENT_APPROVED', 'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED'];
     const [revAgg, orders, pending, customers, newC] = await Promise.all([
-      Order.aggregate([{ $match: { status: { $in: approved } } }, { $group: { _id: null, sum: { $sum: '$total' } } }]),
+      Order.aggregate([{ $match: { status: { $in: approved } } }, { $group: { _id: null, sum: { $sum: '$total' }, profit: { $sum: '$profit' } } }]),
       Order.countDocuments(),
       Order.countDocuments({ status: 'PAYMENT_UPLOADED' }),
       Customer.countDocuments(),
       Customer.countDocuments({ createdAt: { $gte: new Date(Date.now() - 30 * 864e5) } }),
     ]);
-    return { revenue: revAgg[0] ? revAgg[0].sum : 0, orders, pendingPayments: pending, customers, newCustomers: newC };
+    return { revenue: revAgg[0] ? revAgg[0].sum : 0, profit: revAgg[0] ? revAgg[0].profit : 0, orders, pendingPayments: pending, customers, newCustomers: newC };
   },
   async revenue(days = 7) {
     const since = new Date(Date.now() - days * 864e5);

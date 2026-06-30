@@ -30,6 +30,9 @@ export function createApi({ baseUrl, tokens }) {
       adminList: (q) => c.get('/orders/admin/all', q),
       reviewPayment: (orderId, proofId, decision, note) => c.post(`/orders/${orderId}/payment/${proofId}/review`, { decision, note }),
       updateStatus: (orderId, status, note) => c.patch(`/orders/${orderId}/status`, { status, note }),
+      addTracking: (orderId, body) => c.post(`/orders/${orderId}/tracking`, body),
+      updateItemPrice: (orderId, index, unitPrice) => c.patch(`/orders/${orderId}/item-price`, { index, unitPrice }),
+      setCharges: (orderId, body) => c.patch(`/orders/${orderId}/charges`, body),
     },
     crm: {
       customers: (q) => c.get('/crm/customers', q),
@@ -54,6 +57,16 @@ export function createApi({ baseUrl, tokens }) {
       overview: () => c.get('/analytics/overview'),
       revenue: (days = 7) => c.get('/analytics/revenue', { days }),
       topProducts: () => c.get('/analytics/top-products'),
+    },
+    account: {
+      saveLocation: (loc) => c.put('/account/location', loc),
+      wishlists: () => c.get('/account/wishlists'),
+      createWishlist: (name) => c.post('/account/wishlists', { name }),
+      toggleWishlistItem: (index, productId) => c.post(`/account/wishlists/${index}/items`, { productId }),
+    },
+    settings: {
+      getBilling: () => c.get('/settings/billing'),
+      updateBilling: (body) => c.put('/settings/billing', body),
     },
     uploads: { image: (file, prefix = 'uploads') => c.upload(file, prefix) },
   };

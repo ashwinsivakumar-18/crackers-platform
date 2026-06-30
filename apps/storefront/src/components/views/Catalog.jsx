@@ -6,8 +6,9 @@ import { api } from '../../lib/api';
 import { rupee, hueFor } from '../../lib/format';
 import { useCart } from '../../lib/cart';
 import { useAsync, Loading, ErrorState } from '../ui';
+import WishlistHeart from '../WishlistHeart';
 
-export default function Catalog({ onCheckout }) {
+export default function Catalog({ onCheckout, onNeedSignIn }) {
   const [cat, setCat] = useState('all');
   const cats = useAsync(() => api.products.categories(), []);
   const { data, loading, error, reload } = useAsync(
@@ -45,7 +46,7 @@ export default function Catalog({ onCheckout }) {
         <>
             <div className="cat-meta">{data.items.length} item{data.items.length !== 1 ? 's' : ''}</div>
             <div className="grid">
-              {data.items.map((p) => <Card key={p.id} p={p} />)}
+              {data.items.map((p) => <Card key={p.id} p={p} onNeedSignIn={onNeedSignIn} />)}
             </div>
           </>
         }
@@ -56,7 +57,7 @@ export default function Catalog({ onCheckout }) {
 
 }
 
-function Card({ p }) {
+function Card({ p, onNeedSignIn }) {
   const cart = useCart();
   const qty = cart.quantityOf(p.id);
   const hue = hueFor(p.id);
@@ -67,6 +68,7 @@ function Card({ p }) {
       <div className="card-img" style={{ background: `linear-gradient(150deg, hsl(${hue} 75% 62%), hsl(${(hue + 40) % 360} 80% 48%))` }}>
         <Sparkles size={30} className="card-spark" />
         {off > 0 && <span className="card-off">{Math.round(off)}% off</span>}
+        <WishlistHeart productId={p.id} onNeedSignIn={onNeedSignIn} />
       </div>
       <div className="card-body">
         <h4>{p.name}</h4>

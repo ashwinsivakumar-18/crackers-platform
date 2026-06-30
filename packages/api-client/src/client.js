@@ -60,6 +60,7 @@ export class ApiClient {
   get(p, q) { return this.request('GET', p, { query: q }); }
   post(p, b) { return this.request('POST', p, { body: b }); }
   patch(p, b) { return this.request('PATCH', p, { body: b }); }
+  put(p, b) { return this.request('PUT', p, { body: b }); }
   del(p) { return this.request('DELETE', p); }
 
   async postForm(path, form, query) {

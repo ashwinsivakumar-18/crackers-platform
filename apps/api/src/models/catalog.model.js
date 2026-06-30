@@ -18,6 +18,7 @@ const productSchema = new Schema({
   description: String,
   safetyInstructions: String,
   mrp: { type: Number, required: true },
+  costPrice: { type: Number, default: 0 },   // what it costs us — for profit in orders
   sellingPrice: { type: Number, required: true },
   discountType: { type: String, enum: ['NONE', 'PERCENT', 'AMOUNT'], default: 'NONE' },
   discountPercent: { type: Number, default: 0 },

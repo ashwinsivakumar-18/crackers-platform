@@ -14,4 +14,7 @@ r.get('/:id', authenticate, asyncHandler(c.detail));
 r.post('/:id/payment', authenticate, validate({ body: s.paymentSchema }), asyncHandler(c.uploadPayment));
 r.post('/:id/payment/:proofId/review', ...staff('order:update'), validate({ body: s.reviewSchema }), asyncHandler(c.reviewPayment));
 r.patch('/:id/status', ...staff('order:update'), validate({ body: s.statusSchema }), asyncHandler(c.updateStatus));
+r.post('/:id/tracking', ...staff('order:update'), validate({ body: s.trackingSchema }), asyncHandler(c.addTracking));
+r.patch('/:id/item-price', ...staff('order:update'), validate({ body: s.itemPriceSchema }), asyncHandler(c.updateItemPrice));
+r.patch('/:id/charges', ...staff('order:update'), validate({ body: s.chargesSchema }), asyncHandler(c.setCharges));
 module.exports = r;

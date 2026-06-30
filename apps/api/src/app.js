@@ -15,6 +15,8 @@ const crmRoutes = require('./modules/crm/crm.routes');
 const campaignRoutes = require('./modules/campaigns/campaign.routes');
 const analyticsRoutes = require('./modules/analytics/analytics.routes');
 const uploadRoutes = require('./modules/uploads/upload.routes');
+const accountRoutes = require('./modules/account/account.routes');
+const settingsRoutes = require('./modules/settings/settings.routes');
 
 function createApp() {
   const app = express();
@@ -38,6 +40,8 @@ function createApp() {
   v1.use('/campaigns', campaignRoutes);
   v1.use('/analytics', analyticsRoutes);
   v1.use('/uploads', uploadRoutes);
+  v1.use('/account', accountRoutes);
+  v1.use('/settings', settingsRoutes);
   app.use('/api/v1', v1);
 
   app.use(notFound);

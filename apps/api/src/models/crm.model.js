@@ -7,11 +7,19 @@ const customerStatusSchema = new Schema({
   sortOrder: { type: Number, default: 0 },
 }, { timestamps: true });
 
+const locationSchema = new Schema({
+  lat: Number, lng: Number,
+  line1: String, line2: String, city: String, state: String, pincode: String,
+}, { _id: false });
+
 const customerSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   name: { type: String, required: true },
-  mobile: { type: String, required: true, index: true },
-  email: String,
+  mobile: { type: String, required: true, index: true },   // phone is mandatory
+  email: String,                                            // optional
   city: String,
+  state: String,
+  location: locationSchema,
   statusId: { type: Schema.Types.ObjectId, ref: 'CustomerStatus', index: true },
   tags: { type: [String], default: [] },
   source: String,

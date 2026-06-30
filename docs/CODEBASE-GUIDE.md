@@ -27,13 +27,12 @@ Request path: `app.js` (helmet/cors/rate-limit) → module `*.routes.js` → `au
 - `src/client.js` — fetch wrapper, Bearer token, refresh-on-401, multipart `upload`/`postForm`.
 - `src/browserTokenStore.js` — localStorage store. `src/index.js` — `createApi()` typed surface.
 
-## apps/admin · storefront · crm (React + Vite, ESM)
+## apps/admin · storefront (React + Vite, ESM)
 Each: `index.html`, `src/main.jsx`, `src/index.css` (design system), `src/lib/api.js`
 (`createApi` + BrowserTokenStore), `src/lib/format.js`, `src/components/<Shell>.jsx`,
 `src/components/ui.jsx` (`useAsync` + Loading/Error), `src/components/views/*.jsx` (one per screen).
-- admin views: Overview, Verify, Orders, Inventory, Catalog, Customers, Campaigns.
+- admin views: Overview, Verify, Orders (profit + tracking + editable bill), Inventory (cost price), Catalog, Customers (CRM: add/import/WhatsApp/location map), Statuses, Campaigns.
 - storefront views: Catalog, Checkout (pay+upload), OrderPlaced; `lib/cart.jsx` (context).
-- crm views: Customers (+import), Statuses, Campaigns.
 
 ## apps/mobile (React Native / Expo)
 - `App.js` — navigation (tabs + stack). `src/api.js` — `createApi` + AsyncStorage token store.
@@ -44,4 +43,4 @@ Each: `index.html`, `src/main.jsx`, `src/index.css` (design system), `src/lib/ap
 - **Place + pay:** storefront Checkout → `orders.place` → `uploads.image` → `orders.uploadPayment` (status PAYMENT_UPLOADED).
 - **Verify:** admin Verify → `orders.adminList(PAYMENT_UPLOADED)` → `orders.reviewPayment` (→ PAYMENT_APPROVED).
 - **Fulfilment:** admin Orders → `orders.updateStatus` (guarded by ALLOWED_TRANSITIONS; CANCELLED restocks).
-- **Campaign:** crm/admin → `campaigns.create` → `campaigns.send` → worker dispatches via notify.
+- **Campaign:** admin → `campaigns.create` → `campaigns.send` → worker dispatches via notify.

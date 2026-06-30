@@ -1,0 +1,12 @@
+const { Router } = require('express');
+const c = require('./account.controller');
+const s = require('./account.schemas');
+const { validate } = require('../../middleware/validate');
+const { authenticate } = require('../../middleware/auth');
+const { asyncHandler } = require('../../utils/asyncHandler');
+const r = Router();
+r.put('/location', authenticate, validate({ body: s.locationSchema }), asyncHandler(c.saveLocation));
+r.get('/wishlists', authenticate, asyncHandler(c.wishlists));
+r.post('/wishlists', authenticate, validate({ body: s.wishlistCreate }), asyncHandler(c.createWishlist));
+r.post('/wishlists/:index/items', authenticate, validate({ body: s.wishlistItem }), asyncHandler(c.toggleItem));
+module.exports = r;

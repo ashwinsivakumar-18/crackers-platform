@@ -8,6 +8,6 @@ module.exports = {
   logout: async (req, res) => res.json(await authService.logout(req.body.refreshToken)),
   me: async (req, res) => {
     const user = await User.findById(req.user.id).lean();
-    res.json({ user: { id: req.user.id, mobile: user.mobile, name: user.name, isStaff: user.isStaff }, permissions: req.user.permissions });
+    res.json({ user: { id: req.user.id, mobile: user.mobile, name: user.name, isStaff: user.isStaff, location: user.location || null }, permissions: req.user.permissions });
   },
 };

@@ -214,3 +214,33 @@ textarea.field{resize:vertical;line-height:1.55}
 .offer-live .was{text-decoration:line-through;color:var(--muted)}
 .offer-live .pct{margin-left:auto;background:var(--green-soft);color:var(--green);font-weight:700;border-radius:8px;padding:4px 9px;font-size:12.5px}
 .strike{text-decoration:line-through;color:var(--muted)}
+
+/* ---- merged CRM: WhatsApp, customer detail, location map, tracking admin ---- */
+.wa-btn{display:inline-flex;align-items:center;gap:4px;background:#25D366;color:#fff;border-radius:7px;padding:3px 8px;font-size:11.5px;font-weight:600;text-decoration:none;margin-left:8px}
+.wa-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:#25D366;color:#fff;border:0;cursor:pointer}
+.track-admin{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.track-add{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.loc-map{width:100%;height:180px;border:0;border-radius:12px;margin-top:8px}
+.loc-addr{background:var(--paper);border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.55;margin-top:8px}
+.detail-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);gap:8px}
+.detail-row .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.detail-row .v{font-weight:600;display:flex;align-items:center;gap:4px}
+.status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:5px 11px;font-size:12.5px;font-weight:600;background:color-mix(in srgb, var(--c, #8B8175) 14%, #fff);color:var(--c, #8B8175);border:0;cursor:pointer}
+.status-pill.on{outline:2px solid var(--c, #8B8175)}
+.status-chips{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 14px}
+.quick{display:flex;gap:8px;flex-wrap:wrap}
+.quick button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 11px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+.imp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.imp-stat{background:var(--paper);border-radius:10px;padding:12px;text-align:center}
+.imp-stat b{font-size:20px;display:block}.imp-stat.ok b{color:var(--green)}.imp-stat.warn b{color:var(--ember)}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:22px;text-align:center;cursor:pointer;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:6px}
+.c-name{font-weight:600}.c-name.lg{font-size:17px}
+
+/* ---- billing (order drawer + settings template) ---- */
+.billing{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.bill-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;font-size:14px}
+.bill-row.total{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;font-size:16px}
+.linkbtn{background:none;border:0;color:var(--ember);font-family:inherit;font-weight:600;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:6px 0}
+.tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;vertical-align:middle;margin-left:6px}
+.tag-buyer{background:#E3F4EA;color:var(--green)}
+.tag-contact{background:#EFEAE1;color:var(--muted)}
