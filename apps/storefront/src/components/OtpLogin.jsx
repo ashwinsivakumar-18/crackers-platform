@@ -1,86 +1,80 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
+import { OTPWidget } from '@msg91comm/sendotp-sdk';
 import { api } from '../lib/api';
 
-/**
- * Customer OTP auth. Tries REGISTER first; if the account already exists the
- * backend returns 409, so we fall back to LOGIN. The purpose used at request
- * time is reused at verify time (the backend matches them).
- */
+// Customer auth via MSG91 OTP widget. The widget returns a JWT access-token on
+// successful verification; we hand that to our backend, which confirms it with
+// MSG91 (using the secret AuthKey) and logs the user in.
 export default function OtpLogin({ onAuthed }) {
+  const [ready, setReady] = useState(false);
   const [mobile, setMobile] = useState('');
   const [name, setName] = useState('');
-  const [code, setCode] = useState('');
-  const [purpose, setPurpose] = useState('REGISTER');
+  const [otp, setOtp] = useState('');
+  const [reqId, setReqId] = useState(null);
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    api.auth.otpConfig()
+      .then(({ widgetId, widgetToken }) => {
+        if (widgetId && widgetToken) { OTPWidget.initializeWidget(widgetId, widgetToken); setReady(true); }
+        else setError('OTP is not configured yet. Add MSG91 keys on the server.');
+      })
+      .catch(() => setError('Could not load OTP configuration.'));
+  }, []);
+
   const sendOtp = async () => {
-    if (!/^[6-9]\d{9}$/.test(mobile)) {setError('Enter a valid 10-digit mobile');return;}
-    setBusy(true);setError(null);
+    if (!/^[6-9]\d{9}$/.test(mobile)) { setError('Enter a valid 10-digit mobile'); return; }
+    if (!ready) { setError('OTP widget still loading — try again in a moment'); return; }
+    setBusy(true); setError(null);
     try {
-      try {
-        await api.auth.requestOtp(mobile, 'REGISTER');
-        setPurpose('REGISTER');
-      } catch (e) {
-        // 409 → already registered → log in instead
-        await api.auth.requestOtp(mobile, 'LOGIN');
-        setPurpose('LOGIN');
-      }
-      setSent(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not send OTP');
-    } finally {setBusy(false);}
+      const res = await OTPWidget.sendOTP({ identifier: `91${mobile}` });
+      if (res && (res.type === 'success' || res.message)) { setReqId(res.message || res.reqId); setSent(true); }
+      else setError((res && res.message) || 'Could not send OTP');
+    } catch (e) { setError('Could not send OTP. Please try again.'); } finally { setBusy(false); }
+  };
+
+  const resend = async () => {
+    setError(null);
+    try { const res = await OTPWidget.retryOTP({ reqId }); if (res && res.message) setReqId(res.message); } catch { /* ignore */ }
   };
 
   const verify = async () => {
-    if (code.length < 4) {setError('Enter the OTP');return;}
-    setBusy(true);setError(null);
+    if (otp.length < 4) { setError('Enter the OTP'); return; }
+    setBusy(true); setError(null);
     try {
-      await api.auth.verifyOtp(mobile, code, { purpose, name: name || undefined });
-      onAuthed();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Verification failed');
-    } finally {setBusy(false);}
+      const res = await OTPWidget.verifyOTP({ reqId, otp });
+      const accessToken = res && (res.message || res.accessToken || res['access-token']);
+      if (!accessToken || (res.type && res.type !== 'success')) { setError((res && res.message) || 'Incorrect OTP'); return; }
+      await api.auth.verifyMsg91(accessToken, name || undefined);
+      onAuthed && onAuthed();
+    } catch (e) { setError(e instanceof Error ? e.message : 'Verification failed'); } finally { setBusy(false); }
   };
 
   return (
-    <div className="otp-card">
-      <h3>Sign in to check out</h3>
-      <p className="muted" style={{ fontSize: 13, marginBottom: 16 }}>We’ll send a one-time code to your mobile.</p>
+    <div className="otp">
+      <div className="otp-icon"><ShieldCheck size={22} /></div>
+      <h3 className="otp-title">Sign in with OTP</h3>
+      <p className="muted sm">We'll text a one-time code to your mobile.</p>
 
-      <label className="fld"><span>Mobile number</span>
-        <input className="mono" value={mobile} disabled={sent}
-        onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))} placeholder="10-digit mobile" />
-      </label>
+      <input className="field" placeholder="10-digit mobile" inputMode="numeric" value={mobile} disabled={sent}
+        onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))} />
 
-      {!sent ?
-      <>
-          <label className="fld" style={{ marginTop: 12 }}><span>Name (new customers)</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
-          </label>
-          <button className="btn btn-go wide" style={{ marginTop: 16 }} disabled={busy} onClick={sendOtp}>
-            {busy ? 'Sending…' : 'Send OTP'}
-          </button>
-        </> :
-
-      <>
-          <label className="fld" style={{ marginTop: 12 }}><span>Enter OTP</span>
-            <input className="mono" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit code" />
-          </label>
-          <button className="btn btn-go wide" style={{ marginTop: 16 }} disabled={busy} onClick={verify}>
-            {busy ? 'Verifying…' : 'Verify & continue'}
-          </button>
-          <button className="sample" onClick={() => {setSent(false);setCode('');}}>Change number</button>
+      {!sent ? (
+        <>
+          <input className="field" placeholder="Your name (new customers)" value={name} onChange={(e) => setName(e.target.value)} />
+          <button className="btn btn-ember wide" disabled={busy || !ready} onClick={sendOtp}>{busy ? 'Sending…' : 'Send OTP'}</button>
         </>
-      }
-
-      {error && <p className="err-text">{error}</p>}
-      <p className="muted" style={{ fontSize: 11.5, marginTop: 14, display: 'flex', gap: 6, alignItems: 'center' }}>
-        <ShieldCheck size={13} /> Uses /auth/otp/request and /auth/otp/verify
-      </p>
-    </div>);
-
+      ) : (
+        <>
+          <input className="field" placeholder="Enter OTP" inputMode="numeric" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 8))} />
+          <button className="btn btn-ember wide" disabled={busy} onClick={verify}>{busy ? 'Verifying…' : 'Verify & continue'}</button>
+          <button className="linktext" onClick={resend}>Resend code</button>
+        </>
+      )}
+      {error && <p className="otp-err">{error}</p>}
+    </div>
+  );
 }

@@ -47,6 +47,35 @@ const authService = {
     return issueTokens(user);
   },
 
+  // MSG91 flow: the client's OTP widget returns a JWT access-token; we verify it
+  // server-side with our secret AuthKey, then issue our own tokens for the verified mobile.
+  async verifyMsg91(accessToken, name) {
+    if (!env.msg91.authKey) throw ApiError.badRequest('OTP provider not configured');
+    let data = {};
+    try {
+      const res = await fetch('https://control.msg91.com/api/v5/widget/verifyAccessToken', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ authkey: env.msg91.authKey, 'access-token': accessToken }),
+      });
+      data = await res.json().catch(() => ({}));
+      if (!res.ok || (data.type && data.type !== 'success')) {
+        throw ApiError.unauthorized((data && data.message) || 'OTP verification failed');
+      }
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw ApiError.unauthorized('Could not reach OTP provider');
+    }
+    // MSG91 returns the verified identifier (mobile incl. country code) in `message`.
+    const digits = String(data.message || '').replace(/\D/g, '');
+    const mobile = digits.length >= 10 ? digits.slice(-10) : null;
+    if (!mobile) throw ApiError.badRequest('Verified mobile not returned by provider');
+    let user = await User.findOne({ mobile });
+    if (!user) user = await User.create({ mobile, name, role: 'CUSTOMER' });
+    else if (name && !user.name) { user.name = name; await user.save(); }
+    return issueTokens(user);
+  },
+
   async staffLogin(mobile, password) {
     const user = await User.findOne({ mobile, isStaff: true });
     if (!user || !user.passwordHash) throw ApiError.unauthorized('Invalid credentials');

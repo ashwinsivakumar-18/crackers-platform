@@ -10,7 +10,7 @@ React Native (Expo).
 crackers-platform/
 ├── apps/
 │   ├── api/          Express + Mongoose backend (JavaScript)
-│   ├── admin/        React (Vite) — ops, inventory, orders+profit+tracking, CRM (customers/statuses), campaigns
+│   ├── admin/        React (Vite) — ops, inventory, orders (profit+tracking+billing), catalog, settings
 │   ├── storefront/   React (Vite) — customer shop
 │   └── mobile/       React Native (Expo) — customer app
 └── packages/
@@ -45,5 +45,6 @@ Web apps read `VITE_API_URL` (default `http://localhost:4000/api/v1`). The mobil
 
 ## Notes
 - Backend is CommonJS; the React apps + client are ES modules; the mobile app is Expo/React Native.
+- Customer login uses the **MSG91 OTP widget** (client SDK) verified server-side; set MSG91 keys in `apps/api/.env`.
 - Validation uses zod; auth uses JWT + argon2 with refresh-token rotation; uploads go to S3/MinIO
   (env-gated — without keys, a placeholder URL is returned).

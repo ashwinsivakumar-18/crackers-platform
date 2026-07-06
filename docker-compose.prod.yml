@@ -32,12 +32,6 @@ services:
     env_file: .env
     depends_on: [mongo, redis]
 
-  worker:
-    image: crackers-api:latest
-    restart: unless-stopped
-    env_file: .env
-    command: ["node", "src/queue/worker.js"]
-    depends_on: [api, redis]
 
   storefront:
     build: { context: ., dockerfile: Dockerfile.web, args: { APP: storefront, VITE_API_URL: "${VITE_API_URL}" } }

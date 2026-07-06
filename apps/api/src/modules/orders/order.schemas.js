@@ -19,7 +19,7 @@ module.exports = {
     note: z.string().optional(),
   }),
   listQuery: z.object({ status: z.string().optional(), page: z.string().optional(), limit: z.string().optional() }),
-  trackingSchema: z.object({ label: z.string().min(1), place: z.string().optional(), note: z.string().optional() }),
+  trackingSchema: z.object({ label: z.string().min(1), place: z.string().optional(), note: z.string().optional(), trackingId: z.string().optional() }),
   itemPriceSchema: z.object({ index: z.coerce.number().int().min(0), unitPrice: z.coerce.number().min(0) }),
   chargesSchema: z.object({
     deliveryFee: z.coerce.number().min(0).optional(),

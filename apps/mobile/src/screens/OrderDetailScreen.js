@@ -34,7 +34,13 @@ function Invoice({ order }) {
         <Text style={s.store}>{STORE}</Text>
         <View style={{ alignItems: 'flex-end' }}><Text style={s.b}>{order.orderNumber}</Text><Text style={s.muted}>{new Date(order.placedAt || order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</Text></View>
       </View>
-      <Text style={[s.muted, { marginBottom: 10 }]}>Demo bill for your records.</Text>
+      <Text style={[s.muted, { marginBottom: 8 }]}>Demo bill for your records.</Text>
+      <View style={s.billto}>
+        <Text style={s.muted}>Bill to</Text>
+        <Text style={s.b}>{order.user?.name || 'Customer'}</Text>
+        {order.user?.mobile ? <Text style={s.mono}>{order.user.mobile}</Text> : null}
+        {order.address ? <Text style={s.muted}>{order.address}{order.pincode ? ` - ${order.pincode}` : ''}</Text> : null}
+      </View>
       {order.items.map((it, i) => (
         <View style={s.invRow} key={i}>
           <Text style={{ flex: 1, color: theme.ink }}>{it.productName} ×{it.quantity}</Text>
@@ -59,6 +65,7 @@ function Tracking({ order }) {
   const steps = order.trackingSteps || [];
   return (
     <View style={s.inv}>
+      {order.trackingId ? <View style={s.trackId}><Text style={s.muted}>Tracking ID</Text><Text style={s.b}>{order.trackingId}</Text></View> : null}
       <View style={s.flow}>
         {FLOW.map((st, i) => {
           const done = reached >= i && reached >= 0; const current = reached === i;
@@ -100,4 +107,6 @@ const s = StyleSheet.create({
   dotDone: { backgroundColor: theme.green }, dotCurrent: { backgroundColor: theme.ember }, dotTxt: { fontWeight: '700', color: theme.muted, fontSize: 12 },
   flowLabel: { fontSize: 10, marginTop: 6, color: theme.ink, fontWeight: '600', textAlign: 'center' },
   tp: { flexDirection: 'row', gap: 10, paddingVertical: 8, alignItems: 'flex-start' },
+  billto: { paddingVertical: 10, borderBottomWidth: 1, borderColor: theme.line, marginBottom: 6 },
+  trackId: { backgroundColor: theme.paper, borderRadius: 10, padding: 10, marginBottom: 12 },
 });

@@ -49,7 +49,8 @@ const orderSchema = new Schema({
   address: String,
   pincode: String,
   notes: String,
-  profit: { type: Number, default: 0 },        // computed from the BILLED prices on this order
+  profit: { type: Number, default: 0 },
+  trackingId: String,   // courier / manual tracking reference (admin sets)        // computed from the BILLED prices on this order
   trackingSteps: [trackingStepSchema],         // customer-facing journey (admin adds points)
   paymentProofs: [proofSchema],
   statusHistory: [historySchema],

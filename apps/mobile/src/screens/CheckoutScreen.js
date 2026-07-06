@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { api, tokenStore } from '../api';
@@ -18,9 +18,15 @@ export default function CheckoutScreen({ navigation }) {
   const [image, setImage] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [cfg, setCfg] = useState({ minOrderAmount: 3500, packTransportPct: 5, storeUpiId: STORE_UPI });
 
-  const deliveryFee = cart.subtotal > 3000 ? 0 : 80;
-  const total = cart.subtotal + deliveryFee;
+  useEffect(() => { api.settings.getPublic().then((r) => setCfg((c) => ({ ...c, ...r }))).catch(() => {}); }, []);
+
+  const pct = cfg.packTransportPct;
+  const packTransport = Math.round((cart.subtotal * pct) / 100);
+  const total = cart.subtotal + packTransport;
+  const belowMin = cart.subtotal < cfg.minOrderAmount;
+  const shortBy = cfg.minOrderAmount - cart.subtotal;
 
   if (!authed) return <LoginScreen onDone={() => setAuthed(true)} />;
 
@@ -32,6 +38,7 @@ export default function CheckoutScreen({ navigation }) {
     if (!image) return setError('Upload your payment screenshot');
     setBusy(true); setError(null);
     try {
+      if (belowMin) { setError(`Minimum order is ₹${cfg.minOrderAmount}. Add ₹${shortBy} more.`); setBusy(false); return; }
       const { order } = await api.orders.place({
         items: cart.lines.map((l) => ({ productId: l.product.id, quantity: l.quantity })),
         deliveryType: 'DELIVERY', address, pincode,
@@ -52,8 +59,11 @@ export default function CheckoutScreen({ navigation }) {
       <TextInput style={s.input} placeholder="Address" value={address} onChangeText={setAddress} />
       <TextInput style={s.input} placeholder="Pincode" keyboardType="number-pad" value={pincode} onChangeText={setPincode} />
 
+      {belowMin ? <View style={s.minNote}><Text style={s.minTxt}>Minimum order ₹{cfg.minOrderAmount}. Add ₹{shortBy} more.</Text></View> : null}
+      <View style={s.sumRow}><Text style={s.muted}>Subtotal</Text><Text style={s.mono}>{rupee(cart.subtotal)}</Text></View>
+      <View style={s.sumRow}><Text style={s.muted}>Packaging & transportation ({pct}%)</Text><Text style={s.mono}>{rupee(packTransport)}</Text></View>
       <Text style={s.h}>Pay {rupee(total)} by UPI</Text>
-      <Text style={s.upi}>{STORE_UPI}</Text>
+      <Text style={s.upi}>{cfg.storeUpiId}</Text>
       <Text style={s.note}>Pay the exact amount, screenshot the success page, and upload it below. We verify by hand and confirm.</Text>
 
       <TouchableOpacity style={s.upload} onPress={pick}>
@@ -61,7 +71,7 @@ export default function CheckoutScreen({ navigation }) {
       </TouchableOpacity>
 
       {error && <Text style={s.err}>{error}</Text>}
-      <TouchableOpacity style={s.btn} disabled={busy} onPress={placeOrder}>
+      <TouchableOpacity style={[s.btn, belowMin && { opacity: 0.5 }]} disabled={busy || belowMin} onPress={placeOrder}>
         {busy ? <ActivityIndicator color="#fff" /> : <Text style={s.btnTxt}>Place order · {rupee(total)}</Text>}
       </TouchableOpacity>
     </ScrollView>
@@ -75,4 +85,6 @@ const s = StyleSheet.create({
   preview: { width: 160, height: 200, borderRadius: 10, resizeMode: 'cover' },
   btn: { backgroundColor: theme.ember, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 16 }, btnTxt: { color: '#fff', fontWeight: '700', fontSize: 16 },
   err: { color: theme.ember, marginTop: 12 },
+  minNote: { backgroundColor: '#FDECEA', borderRadius: 10, padding: 11, marginTop: 10 }, minTxt: { color: theme.ember, fontWeight: '700' },
+  sumRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }, mono: { color: theme.ink }, muted: { color: theme.muted },
 });

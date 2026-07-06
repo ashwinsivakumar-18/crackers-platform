@@ -46,7 +46,9 @@ export default function Verify() {
             <div className="review-slip">
               {proof?.screenshotUrl ?
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={proof.screenshotUrl} alt="payment screenshot" style={{ width: '100%', borderRadius: 12 }} /> :
+              <a href={proof.screenshotUrl} target="_blank" rel="noreferrer" title="Open full screenshot">
+                <img src={proof.screenshotUrl} alt="payment screenshot" style={{ width: '100%', borderRadius: 12 }} />
+              </a> :
 
               <div style={{ color: '#fff' }}>No screenshot</div>
               }
@@ -66,6 +68,8 @@ export default function Verify() {
                 <div className={`amt-flag ${match ? 'ok' : 'warn'}`}>
                   {match ? <><Check size={13} /> Amounts match</> : <><X size={13} /> Mismatch — verify carefully</>}
                 </div>
+                {proof?.referenceNo && <div className="muted sm">UPI ref: <span className="mono">{proof.referenceNo}</span></div>}
+                {proof?.screenshotUrl && <a className="linkbtn" href={proof.screenshotUrl} target="_blank" rel="noreferrer">Open full screenshot ↗</a>}
               </div>
 
               <input

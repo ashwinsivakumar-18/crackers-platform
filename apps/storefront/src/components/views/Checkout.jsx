@@ -1,5 +1,5 @@
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, Truck, Store, ArrowRight, Upload, Copy, Check, ShieldCheck, X } from 'lucide-react';
 
 import { api } from '../../lib/api';
@@ -14,11 +14,17 @@ export default function Checkout({ onBack, onPlaced }) {
   const [step, setStep] = useState('details');
   const [del, setDel] = useState('DELIVERY');
   const [form, setForm] = useState({ name: '', mobile: '', address: '', pincode: '' });
+  const [cfg, setCfg] = useState({ minOrderAmount: 3500, packTransportPct: 5, storeUpiId: STORE_UPI });
 
-  const deliveryFee = del === 'STORE_PICKUP' ? 0 : cart.subtotal > 3000 ? 0 : 80;
-  const total = cart.subtotal + deliveryFee;
+  useEffect(() => { api.settings.getPublic().then((r) => setCfg((c) => ({ ...c, ...r }))).catch(() => {}); }, []);
 
-  const detailsOk = form.name && /^[6-9]\d{9}$/.test(form.mobile) && (
+  const pct = cfg.packTransportPct;
+  const packTransport = del === 'STORE_PICKUP' ? 0 : Math.round((cart.subtotal * pct) / 100);
+  const total = cart.subtotal + packTransport;
+  const belowMin = cart.subtotal < cfg.minOrderAmount;
+  const shortBy = cfg.minOrderAmount - cart.subtotal;
+
+  const detailsOk = !belowMin && form.name && /^[6-9]\d{9}$/.test(form.mobile) && (
   del === 'STORE_PICKUP' || form.address && /^\d{6}$/.test(form.pincode));
 
   const proceed = () => {
@@ -34,6 +40,7 @@ export default function Checkout({ onBack, onPlaced }) {
           {step === 'details' &&
           <div className="card-pane">
               <h3>Where should we send it?</h3>
+              {belowMin && <div className="min-note">Minimum order is {rupee(cfg.minOrderAmount)}. Add {rupee(shortBy)} more to continue.</div>}
               <div className="seg">
                 <button className={del === 'DELIVERY' ? 'on' : ''} onClick={() => setDel('DELIVERY')}><Truck size={16} /> Home delivery</button>
                 <button className={del === 'STORE_PICKUP' ? 'on' : ''} onClick={() => setDel('STORE_PICKUP')}><Store size={16} /> Store pickup</button>
@@ -57,7 +64,7 @@ export default function Checkout({ onBack, onPlaced }) {
           }
 
           {step === 'pay' &&
-          <PayUpload total={total} deliveryType={del} pincode={form.pincode}
+          <PayUpload total={total} deliveryType={del} pincode={form.pincode} storeUpi={cfg.storeUpiId} address={form.address}
           onBack={() => setStep('details')} onPlaced={onPlaced} />
           }
         </div>
@@ -73,18 +80,16 @@ export default function Checkout({ onBack, onPlaced }) {
             )}
           </div>
           <div className="sum-row"><span>Subtotal</span><b>{rupee(cart.subtotal)}</b></div>
-          <div className="sum-row"><span>Delivery</span><b>{deliveryFee === 0 ? 'Free' : rupee(deliveryFee)}</b></div>
+          <div className="sum-row"><span>Packaging &amp; transportation ({pct}%)</span><b>{packTransport === 0 ? '—' : rupee(packTransport)}</b></div>
           <div className="sum-total"><span>Total</span><b>{rupee(total)}</b></div>
+          {belowMin && <div className="min-note sm">Min order {rupee(cfg.minOrderAmount)} · add {rupee(shortBy)} more</div>}
         </aside>
       </div>
     </section>);
 
 }
 
-function PayUpload({ total, deliveryType, pincode, onBack, onPlaced
-
-
-}) {
+function PayUpload({ total, deliveryType, pincode, storeUpi, address, onBack, onPlaced }) {
   const cart = useCart();
   const inputRef = useRef(null);
   const [file, setFile] = useState(null);
@@ -108,7 +113,8 @@ function PayUpload({ total, deliveryType, pincode, onBack, onPlaced
       const { order } = await api.orders.place({
         items: cart.lines.map((l) => ({ productId: l.product.id, quantity: l.quantity })),
         deliveryType,
-        pincode: deliveryType === 'DELIVERY' ? pincode : undefined
+        address: deliveryType === 'DELIVERY' ? address : undefined,
+        pincode: deliveryType === 'DELIVERY' ? pincode : undefined,
       });
       // 2) upload the screenshot, 3) attach the payment proof
       const { url } = await api.uploads.image(file);
@@ -127,8 +133,8 @@ function PayUpload({ total, deliveryType, pincode, onBack, onPlaced
 
       <div className="pay-steps" style={{ margin: '14px 0' }}>
         <div className="pay-step"><b>1</b><div>Pay <strong>{rupee(total)}</strong> to our UPI ID
-          <button className="upi" onClick={() => {navigator.clipboard?.writeText(STORE_UPI);setCopied(true);setTimeout(() => setCopied(false), 1500);}}>
-            {STORE_UPI} {copied ? <Check size={13} /> : <Copy size={13} />}
+          <button className="upi" onClick={() => {navigator.clipboard?.writeText(storeUpi);setCopied(true);setTimeout(() => setCopied(false), 1500);}}>
+            {storeUpi} {copied ? <Check size={13} /> : <Copy size={13} />}
           </button></div></div>
         <div className="pay-step"><b>2</b><div>Screenshot the success page</div></div>
         <div className="pay-step"><b>3</b><div>Upload it — we verify by hand and confirm</div></div>

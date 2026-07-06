@@ -68,6 +68,7 @@ function OrderDrawer({ id, onClose, onChanged }) {
   const [priceVal, setPriceVal] = useState('');
   const [tLabel, setTLabel] = useState('');
   const [tPlace, setTPlace] = useState('');
+  const [tId, setTId] = useState('');
   const order = data?.order;
 
   const refresh = async () => { await reload(); onChanged(); };
@@ -76,7 +77,7 @@ function OrderDrawer({ id, onClose, onChanged }) {
   const addStep = async () => {
     if (!tLabel.trim()) return;
     setBusy(true);
-    try { await api.orders.addTracking(id, { label: tLabel.trim(), place: tPlace.trim() || undefined }); setTLabel(''); setTPlace(''); await refresh(); }
+    try { await api.orders.addTracking(id, { label: tLabel.trim(), place: tPlace.trim() || undefined, trackingId: tId.trim() || undefined }); setTLabel(''); setTPlace(''); setTId(''); await refresh(); }
     finally { setBusy(false); }
   };
 
@@ -129,6 +130,7 @@ function OrderDrawer({ id, onClose, onChanged }) {
 
             <div className="track-admin">
               <div className="tl-title">Tracking the customer sees</div>
+              {order.trackingId ? <div className="muted sm" style={{ marginBottom: 8 }}>Tracking ID: <b className="mono">{order.trackingId}</b></div> : null}
               {(order.trackingSteps || []).map((t, i) => (
                 <div className="tl-item done" key={i}>
                   <span /> <div><b>{t.label}</b>{t.place ? <span className="muted"> · {t.place}</span> : null}<div className="muted sm">{new Date(t.at).toLocaleString('en-IN')}</div></div>
@@ -137,6 +139,7 @@ function OrderDrawer({ id, onClose, onChanged }) {
               <div className="track-add">
                 <input className="field" placeholder="Step (e.g. Out for delivery)" value={tLabel} onChange={(e) => setTLabel(e.target.value)} />
                 <input className="field" placeholder="Place / checkpoint (optional)" value={tPlace} onChange={(e) => setTPlace(e.target.value)} />
+                <input className="field" placeholder="Tracking ID (optional)" value={tId} onChange={(e) => setTId(e.target.value)} />
                 <button className="btn btn-ink" disabled={busy} onClick={addStep}><Plus size={15} /> Add point</button>
               </div>
             </div>

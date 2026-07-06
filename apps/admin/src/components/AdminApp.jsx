@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, ShieldCheck, ReceiptText, Boxes, Warehouse, Users, Tags, Megaphone, Sparkles, Settings as SettingsIcon, LogOut, Bell } from
+  LayoutDashboard, ShieldCheck, ReceiptText, Boxes, Warehouse, Users, Sparkles, Settings as SettingsIcon, LogOut, Bell } from
 'lucide-react';
 import { api } from '../lib/api';
 import { LivePill } from './ui';
@@ -12,9 +12,7 @@ import Orders from './views/Orders';
 import Inventory from './views/Inventory';
 import Catalog from './views/Catalog';
 import Customers from './views/Customers';
-import Statuses from './views/Statuses';
 import Settings from './views/Settings';
-import Campaigns from './views/Campaigns';
 
 
 
@@ -25,8 +23,7 @@ const NAV = [
 { k: 'inventory', label: 'Inventory', icon: Warehouse },
 { k: 'catalog', label: 'Catalog', icon: Boxes },
 { k: 'customers', label: 'Customers', icon: Users },
-{ k: 'statuses', label: 'Statuses', icon: Tags },
-{ k: 'campaigns', label: 'Campaigns', icon: Megaphone }];
+{ k: 'settings', label: 'Settings', icon: SettingsIcon }];
 
 
 const SUBTITLE = {
@@ -35,10 +32,9 @@ const SUBTITLE = {
   orders: 'Every order, filterable by stage',
   inventory: 'Categories, products, images and pricing',
   catalog: 'Products, pricing and stock',
-  customers: 'Your customer book',
-  statuses: 'Customizable customer stages',
-  campaigns: 'Reach customers on WhatsApp, email and push'
-};
+  customers: 'Everyone who signed in',
+  settings: 'Billing template & defaults',
+    };
 
 export default function AdminApp() {
   const [ready, setReady] = useState(false);
@@ -111,10 +107,8 @@ export default function AdminApp() {
           {view === 'orders' && <Orders />}
           {view === 'inventory' && <Inventory />}
           {view === 'catalog' && <Catalog />}
-          {view === 'customers' && <Customers />}
-          {view === 'statuses' && <Statuses />}
+                    {view === 'customers' && <Customers />}
           {view === 'settings' && <Settings />}
-          {view === 'campaigns' && <Campaigns />}
         </div>
       </main>
     </div>);

@@ -1,11 +1,11 @@
 require('dotenv').config();
 const { connectDB, disconnectDB } = require('../src/lib/db');
-const { User, CustomerStatus, Category, Product } = require('../src/models');
+const { User, Category, Product } = require('../src/models');
 const { hashPassword } = require('../src/lib/password');
 const { calculatePrice } = require('../src/utils/pricing');
 const { slugify } = require('../src/utils/ids');
 
-const ALL_PERMS = ['product:create', 'product:update', 'order:read', 'order:update', 'crm:read', 'crm:update', 'campaign:send'];
+const ALL_PERMS = ['product:create', 'product:update', 'order:read', 'order:update'];
 
 (async () => {
   await connectDB();
@@ -18,14 +18,6 @@ const ALL_PERMS = ['product:create', 'product:update', 'order:read', 'order:upda
     { upsert: true },
   );
 
-  // Default CRM statuses
-  const statuses = [
-    { name: 'New lead', color: '#3b82f6', sortOrder: 0 },
-    { name: 'Enquiry', color: '#E69A1F', sortOrder: 1 },
-    { name: 'Repeat buyer', color: '#1E8A52', sortOrder: 2 },
-    { name: 'Wholesale', color: '#8b5cf6', sortOrder: 3 },
-  ];
-  for (const s of statuses) await CustomerStatus.updateOne({ name: s.name }, { $set: s }, { upsert: true });
 
   // A couple of generic categories + products (rename freely in Inventory)
   const catA = await Category.findOneAndUpdate({ slug: 'category-a' }, { $set: { name: 'Category A', slug: 'category-a', sortOrder: 0 } }, { upsert: true, new: true });

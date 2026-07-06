@@ -9,4 +9,5 @@ module.exports = {
   }),
   staffLoginSchema: z.object({ mobile, password: z.string().min(6) }),
   refreshSchema: z.object({ refreshToken: z.string() }),
+  msg91Schema: z.object({ accessToken: z.string().min(10), name: z.string().optional() }),
 };

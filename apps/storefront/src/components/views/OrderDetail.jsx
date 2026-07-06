@@ -38,6 +38,12 @@ function Invoice({ order }) {
         <div><div className="inv-store">{STORE}</div><div className="muted sm">Tap to view — this is a demo bill for your records.</div></div>
         <div className="inv-meta"><div className="mono b">{order.orderNumber}</div><div className="muted sm">{new Date(order.placedAt || order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div></div>
       </div>
+      <div className="inv-billto">
+        <div className="muted sm">Bill to</div>
+        <div className="b">{order.user?.name || 'Customer'}</div>
+        {order.user?.mobile && <div className="mono sm">{order.user.mobile}</div>}
+        {order.address ? <div className="muted sm">{order.address}{order.pincode ? ` - ${order.pincode}` : ''}</div> : <div className="muted sm">{order.deliveryType === 'STORE_PICKUP' ? 'Store pickup' : ''}</div>}
+      </div>
       <table className="inv-tbl">
         <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
         <tbody>
@@ -64,6 +70,7 @@ function Tracking({ order }) {
   const steps = order.trackingSteps || [];
   return (
     <div className="tracking">
+      {order.trackingId ? <div className="track-id">Tracking ID: <b className="mono">{order.trackingId}</b></div> : null}
       <div className="track-flow">
         {FLOW.map((s, i) => {
           const done = reached >= i && reached >= 0;

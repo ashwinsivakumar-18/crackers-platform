@@ -10,6 +10,8 @@ const r = Router();
 r.post('/otp/request', otpLimiter, validate({ body: s.requestOtpSchema }), asyncHandler(c.requestOtp));
 r.post('/otp/verify', authLimiter, validate({ body: s.verifyOtpSchema }), asyncHandler(c.verifyOtp));
 r.post('/staff/login', authLimiter, validate({ body: s.staffLoginSchema }), asyncHandler(c.staffLogin));
+r.get('/otp/config', asyncHandler(c.otpConfig));
+r.post('/msg91/verify', authLimiter, validate({ body: s.msg91Schema }), asyncHandler(c.verifyMsg91));
 r.post('/refresh', validate({ body: s.refreshSchema }), asyncHandler(c.refresh));
 r.post('/logout', asyncHandler(c.logout));
 r.get('/me', authenticate, asyncHandler(c.me));

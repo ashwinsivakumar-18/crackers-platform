@@ -11,12 +11,11 @@ const { notFound, errorHandler } = require('./middleware/error');
 const authRoutes = require('./modules/auth/auth.routes');
 const productRoutes = require('./modules/products/product.routes');
 const orderRoutes = require('./modules/orders/order.routes');
-const crmRoutes = require('./modules/crm/crm.routes');
-const campaignRoutes = require('./modules/campaigns/campaign.routes');
 const analyticsRoutes = require('./modules/analytics/analytics.routes');
 const uploadRoutes = require('./modules/uploads/upload.routes');
 const accountRoutes = require('./modules/account/account.routes');
 const settingsRoutes = require('./modules/settings/settings.routes');
+const customersRoutes = require('./modules/customers/customers.routes');
 
 function createApp() {
   const app = express();
@@ -36,12 +35,11 @@ function createApp() {
   v1.use('/auth', authRoutes);
   v1.use('/products', productRoutes);
   v1.use('/orders', orderRoutes);
-  v1.use('/crm', crmRoutes);
-  v1.use('/campaigns', campaignRoutes);
   v1.use('/analytics', analyticsRoutes);
   v1.use('/uploads', uploadRoutes);
   v1.use('/account', accountRoutes);
   v1.use('/settings', settingsRoutes);
+  v1.use('/customers', customersRoutes);
   app.use('/api/v1', v1);
 
   app.use(notFound);

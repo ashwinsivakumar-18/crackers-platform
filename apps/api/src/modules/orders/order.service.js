@@ -3,6 +3,7 @@ const { ALLOWED_TRANSITIONS } = require('./order.schemas');
 const { parsePagination, buildMeta } = require('../../utils/pagination');
 const { generateOrderNumber } = require('../../utils/ids');
 const { ApiError } = require('../../utils/apiError');
+const { env } = require('../../config/env');
 
 const shape = (o) => { const x = o.toObject ? o.toObject() : o; x.id = String(x._id); if (x.paymentProofs) x.paymentProofs = x.paymentProofs.map((p) => ({ ...p, id: String(p._id) })); return x; };
 
@@ -24,6 +25,11 @@ const orderService = {
       subtotal += unit * line.quantity;
     }
 
+    // Minimum order value.
+    if (subtotal < env.minOrderAmount) {
+      throw ApiError.badRequest(`Minimum order is ₹${env.minOrderAmount.toLocaleString('en-IN')}. Add ₹${(env.minOrderAmount - subtotal).toLocaleString('en-IN')} more.`);
+    }
+
     // Atomic-ish stock decrement (works on standalone Mongo); rollback on conflict.
     const done = [];
     for (const line of body.items) {
@@ -35,25 +41,16 @@ const orderService = {
       done.push(line);
     }
 
-    const deliveryFee = body.deliveryType === 'STORE_PICKUP' ? 0 : subtotal > 3000 ? 0 : 80;
+    // Packaging & transportation = a % of the subtotal (store pickup pays none).
+    const pct = env.packTransportPct;
+    const packTransport = body.deliveryType === 'STORE_PICKUP' ? 0 : Math.round((subtotal * pct) / 100);
+    const extraCharges = packTransport > 0 ? [{ label: `Packaging & transportation (${pct}%)`, amount: packTransport }] : [];
     // Profit comes straight from this order's billed lines, never from current price.
     const profit = items.reduce((s2, it) => s2 + (it.unitPrice - (it.costPrice || 0)) * it.quantity, 0);
 
-    // Make sure this buyer shows up in admin's CRM (linked by mobile), with their saved location.
-    try {
-      const { User, Customer } = require('../../models');
-      const u = await User.findById(userId).lean();
-      if (u) {
-        await Customer.updateOne(
-          { mobile: u.mobile },
-          { $setOnInsert: { name: u.name || 'Customer', mobile: u.mobile, source: 'ORDER' }, $set: { userId: u._id, ...(u.location ? { location: u.location, city: u.location.city, state: u.location.state } : {}) } },
-          { upsert: true },
-        );
-      }
-    } catch (e) { /* non-fatal */ }
-
     const order = await Order.create({
-      orderNumber: generateOrderNumber(), userId, items, subtotal, deliveryFee, total: subtotal + deliveryFee,
+      orderNumber: generateOrderNumber(), userId, items, subtotal, deliveryFee: 0, packingFee: 0, extraCharges,
+      total: subtotal + packTransport,
       status: 'PENDING_PAYMENT', deliveryType: body.deliveryType, address: body.address, pincode: body.pincode, notes: body.notes, profit,
       statusHistory: [{ status: 'PENDING_PAYMENT' }],
     });
@@ -112,9 +109,10 @@ const orderService = {
   },
 
   // Admin adds a customer-facing tracking checkpoint (reflected on the customer's truck timeline).
-  async addTrackingStep(orderId, { label, place, note }) {
+  async addTrackingStep(orderId, { label, place, note, trackingId }) {
     const order = await Order.findById(orderId);
     if (!order) throw ApiError.notFound('Order not found');
+    if (trackingId) order.trackingId = trackingId;
     order.trackingSteps.push({ label, place, note, at: new Date() });
     await order.save();
     return { order: shape(order) };

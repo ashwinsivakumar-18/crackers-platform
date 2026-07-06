@@ -42,9 +42,9 @@ export default function Overview({ onGoVerify }) {
           <div className="kpi-sub">total</div>
         </div>
         <div className="kpi">
-          <div className="kpi-label">Customers</div>
-          <div className="kpi-value mono">{overview.customers.toLocaleString('en-IN')}</div>
-          <div className="kpi-sub">+{overview.newCustomers} new</div>
+          <div className="kpi-label">Profit</div>
+          <div className="kpi-value mono">{rupee(overview.profit || 0)}</div>
+          <div className="kpi-sub">from approved bills</div>
         </div>
       </div>
 

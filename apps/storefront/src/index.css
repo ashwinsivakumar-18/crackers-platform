@@ -341,3 +341,17 @@ s{color:var(--muted)}
 .addr-grid{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .card-img{position:relative}
+
+/* ---- MSG91 OTP login ---- */
+.otp{display:flex;flex-direction:column;gap:10px;text-align:center}
+.otp-icon{width:48px;height:48px;border-radius:14px;background:var(--emberSoft,#FBE6DD);color:var(--ember);display:flex;align-items:center;justify-content:center;margin:0 auto}
+.otp-title{font-size:18px;font-weight:800;color:var(--ink);margin:2px 0 0}
+.otp .field{text-align:center}
+.otp-err{color:var(--ember);font-size:13px;margin-top:4px}
+.linktext{background:none;border:0;color:var(--ember);font-weight:600;font-size:13px;cursor:pointer;font-family:inherit}
+
+.inv-billto{margin:12px 0 6px;padding:12px 0;border-bottom:1px solid var(--line)}
+.track-id{background:var(--paper);border-radius:10px;padding:9px 13px;margin-bottom:14px;font-size:13.5px}
+
+.min-note{background:#FDECEA;color:var(--ember);border-radius:10px;padding:10px 13px;font-size:13px;font-weight:600;margin:10px 0}
+.min-note.sm{padding:7px 10px;font-size:12px;margin-top:8px}

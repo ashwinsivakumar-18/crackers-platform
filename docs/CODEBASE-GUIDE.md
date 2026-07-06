@@ -18,9 +18,8 @@ Request path: `app.js` (helmet/cors/rate-limit) → module `*.routes.js` → `au
   `order` (items/proofs/history embedded), `crm` (Customer/Status/Communication/FollowUp),
   `campaign`, `misc` (Review/AuditLog). Barrel: `models/index.js`.
 - `src/modules/<m>/` — each has `*.schemas.js` (zod) · `*.service.js` · `*.controller.js` · `*.routes.js`:
-  `auth`, `products` (catalog+categories+inventory), `orders` (manual-payment engine),
-  `crm` (customers/statuses/import), `campaigns`, `analytics`, `uploads` (storage+notify+route).
-- `src/queue/` — `connection`, `campaign.queue` (enqueue + worker dispatch), `worker.js` (entry).
+  `auth` (MSG91 OTP + staff), `products` (catalog+inventory), `orders` (manual-payment + billing + tracking),
+  `analytics`, `account` (wishlists + location), `settings` (billing template), `uploads`.
 - `scripts/seed.js` — admin user, default statuses, sample category/products.
 
 ## packages/api-client (shared, ESM)
@@ -31,7 +30,7 @@ Request path: `app.js` (helmet/cors/rate-limit) → module `*.routes.js` → `au
 Each: `index.html`, `src/main.jsx`, `src/index.css` (design system), `src/lib/api.js`
 (`createApi` + BrowserTokenStore), `src/lib/format.js`, `src/components/<Shell>.jsx`,
 `src/components/ui.jsx` (`useAsync` + Loading/Error), `src/components/views/*.jsx` (one per screen).
-- admin views: Overview, Verify, Orders (profit + tracking + editable bill), Inventory (cost price), Catalog, Customers (CRM: add/import/WhatsApp/location map), Statuses, Campaigns.
+- admin views: Overview, Verify, Orders (profit + tracking + billing), Inventory (cost price), Catalog, Settings (billing template).
 - storefront views: Catalog, Checkout (pay+upload), OrderPlaced; `lib/cart.jsx` (context).
 
 ## apps/mobile (React Native / Expo)
@@ -43,4 +42,3 @@ Each: `index.html`, `src/main.jsx`, `src/index.css` (design system), `src/lib/ap
 - **Place + pay:** storefront Checkout → `orders.place` → `uploads.image` → `orders.uploadPayment` (status PAYMENT_UPLOADED).
 - **Verify:** admin Verify → `orders.adminList(PAYMENT_UPLOADED)` → `orders.reviewPayment` (→ PAYMENT_APPROVED).
 - **Fulfilment:** admin Orders → `orders.updateStatus` (guarded by ALLOWED_TRANSITIONS; CANCELLED restocks).
-- **Campaign:** admin → `campaigns.create` → `campaigns.send` → worker dispatches via notify.

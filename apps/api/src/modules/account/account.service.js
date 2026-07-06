@@ -1,16 +1,10 @@
-const { User, Customer } = require('../../models');
+const { User } = require('../../models');
 const { ApiError } = require('../../utils/apiError');
 
 const accountService = {
   async saveLocation(userId, loc) {
     const user = await User.findByIdAndUpdate(userId, { location: loc }, { new: true });
     if (!user) throw ApiError.notFound('User not found');
-    // Mirror onto the CRM customer so admin sees it on the map.
-    await Customer.updateOne(
-      { mobile: user.mobile },
-      { $setOnInsert: { name: user.name || 'Customer', mobile: user.mobile, source: 'APP' }, $set: { userId: user._id, location: loc, city: loc.city, state: loc.state } },
-      { upsert: true },
-    );
     return { location: user.location };
   },
   async wishlists(userId) {
