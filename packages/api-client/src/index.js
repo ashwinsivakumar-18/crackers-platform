@@ -70,6 +70,7 @@ export function createApi({ baseUrl, tokens }) {
       getPublic: () => c.get('/settings/public'),
       getBilling: () => c.get('/settings/billing'),
       updateBilling: (body) => c.put('/settings/billing', body),
+      setBranding: (body) => c.put('/settings/branding', body),
     },
     uploads: { image: (file, prefix = 'uploads') => c.upload(file, prefix) },
   };

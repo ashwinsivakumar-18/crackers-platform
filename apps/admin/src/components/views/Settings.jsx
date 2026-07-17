@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, ReceiptText, Save } from 'lucide-react';
+import { Plus, Trash2, ReceiptText, Save, ImagePlus, Image as ImageIcon } from 'lucide-react';
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
 import { Loading } from '../ui';
@@ -9,8 +9,20 @@ export default function Settings() {
   const [billing, setBilling] = useState(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [logo, setLogo] = useState('');
+  const [logoBusy, setLogoBusy] = useState(false);
 
   useEffect(() => { api.settings.getBilling().then((r) => setBilling({ deliveryFee: r.billing.deliveryFee || 0, packingFee: r.billing.packingFee || 0, charges: r.billing.charges || [] })); }, []);
+  useEffect(() => { api.settings.getPublic().then((r) => setLogo(r.logoUrl || '')).catch(() => {}); }, []);
+
+  const uploadLogo = async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    setLogoBusy(true);
+    try { const r = await api.uploads.image(f, 'branding'); await api.settings.setBranding({ logoUrl: r.url }); setLogo(r.url); }
+    finally { setLogoBusy(false); e.target.value = ''; }
+  };
+  const removeLogo = async () => { setLogoBusy(true); try { await api.settings.setBranding({ logoUrl: null }); setLogo(''); } finally { setLogoBusy(false); } };
+
   if (!billing) return <Loading />;
 
   const set = (k, v) => setBilling({ ...billing, [k]: v });
@@ -30,6 +42,20 @@ export default function Settings() {
 
   return (
     <div className="stack" style={{ maxWidth: 520 }}>
+      <div className="panel">
+        <div className="tl-title"><ImageIcon size={15} /> Store logo</div>
+        <p className="muted sm">Upload your shop logo — it replaces the default sparkle across the storefront. A PNG with a transparent background looks best.</p>
+        <div className="logo-uploader">
+          <div className="logo-preview">{logo ? <img src={logo} alt="Store logo" /> : <span className="muted sm">No logo yet</span>}</div>
+          <div className="logo-actions">
+            <label className="btn btn-ember"><ImagePlus size={15} /> {logoBusy ? 'Uploading…' : logo ? 'Replace logo' : 'Upload logo'}
+              <input type="file" accept="image/*" hidden onChange={uploadLogo} disabled={logoBusy} />
+            </label>
+            {logo && <button className="btn btn-ghost" onClick={removeLogo} disabled={logoBusy}>Remove</button>}
+          </div>
+        </div>
+      </div>
+
       <div className="panel">
         <div className="tl-title"><ReceiptText size={15} /> Billing template</div>
         <p className="muted sm">These defaults show up on every order's bill with one tap on "Apply template". You can still tweak charges per order.</p>

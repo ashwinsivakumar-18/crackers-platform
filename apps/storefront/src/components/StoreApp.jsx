@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, ShoppingBag, X, Home, Info } from 'lucide-react';
 import { CartProvider, useCart } from '../lib/cart';
 import { AuthProvider, useAuth } from '../lib/auth';
+import { api } from '../lib/api';
 import Catalog from './views/Catalog';
 import Checkout from './views/Checkout';
 import OrderPlaced from './views/OrderPlaced';
@@ -26,6 +27,9 @@ function Shell() {
   const [openOrderId, setOpenOrderId] = useState(null);
   const [trackId, setTrackId] = useState(null);
   const [signIn, setSignIn] = useState(false);
+  const [logo, setLogo] = useState('');
+
+  useEffect(() => { api.settings.getPublic().then((r) => setLogo(r.logoUrl || '')).catch(() => {}); }, []);
 
   const go = (v) => { setView(v); window.scrollTo(0, 0); };
   const openOrder = (id) => { setOpenOrderId(id); go('order-detail'); };
@@ -36,7 +40,7 @@ function Shell() {
       <header className="hdr">
         <button className="hdr-home" title="Home — products" onClick={() => go('shop')}><Home size={18} /></button>
         <button className="logo" onClick={() => go('shop')}>
-          <span className="logo-mark"><Sparkles size={16} /></span>
+          <span className="logo-mark">{logo ? <img src={logo} alt="Sivakumar Crackers" className="logo-img" /> : <Sparkles size={16} />}</span>
           <span className="logo-name">Sivakumar<small>Crackers</small></span>
         </button>
         <div style={{ flex: 1 }} />
@@ -65,15 +69,37 @@ function Shell() {
 
       {view === 'shop' && (
         <footer className="shop-footer">
-          <div className="sf-brand"><Sparkles size={15} /> Sivakumar Crackers</div>
-          <div className="sf-links">
-            <button onClick={() => go('about')}>About us</button>
-            <button onClick={() => go('support')}>Help &amp; Support</button>
-            <button onClick={() => go('bulk')}>Bulk orders</button>
-            <button onClick={() => go('howto')}>How to order</button>
-            <button onClick={() => go('tracking')}>Track order</button>
+          <div className="sf-top">
+            <div className="sf-brandcol">
+              <div className="sf-brand">{logo ? <img src={logo} alt="" className="sf-logo-img" /> : <Sparkles size={17} />} Sivakumar Crackers</div>
+              <p className="sf-tag">Safe, joyful celebrations — delivered to your nearby Delivery Hub, all across India. 🇮🇳</p>
+              <div className="sf-badges">
+                <span>🔒 UPI / bank transfer</span>
+                <span>✅ Hand-verified orders</span>
+              </div>
+            </div>
+            <div className="sf-col">
+              <h5>Explore</h5>
+              <button onClick={() => go('shop')}>Shop</button>
+              <button onClick={() => go('howto')}>How to order</button>
+              <button onClick={() => go('bulk')}>Bulk &amp; gift boxes</button>
+            </div>
+            <div className="sf-col">
+              <h5>Orders</h5>
+              <button onClick={() => go('orders')}>My orders</button>
+              <button onClick={() => go('tracking')}>Track order</button>
+              <button onClick={() => go('wishlists')}>Wishlists</button>
+            </div>
+            <div className="sf-col">
+              <h5>Help</h5>
+              <button onClick={() => go('about')}>About us</button>
+              <button onClick={() => go('support')}>Help &amp; Support</button>
+            </div>
           </div>
-          <div className="sf-note">Pay by UPI · we verify every order by hand · celebrate safely 🪔</div>
+          <div className="sf-bottom">
+            <span>© {new Date().getFullYear()} Sivakumar Crackers · All rights reserved</span>
+            <span className="sf-note">Pay by UPI · we verify every order by hand · celebrate safely 🪔</span>
+          </div>
         </footer>
       )}
 
