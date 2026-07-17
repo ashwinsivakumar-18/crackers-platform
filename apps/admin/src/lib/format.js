@@ -11,6 +11,8 @@ export const STATUS_LABEL = {
   PROCESSING: 'Processing',
   PACKED: 'Packed',
   SHIPPED: 'Shipped',
+  AT_HUB: 'At Delivery Hub',
+  OUT_FOR_DELIVERY: 'Out for delivery',
   DELIVERED: 'Delivered',
   CANCELLED: 'Cancelled'
 };
@@ -24,6 +26,8 @@ export const STATUS_TONE = {
   PROCESSING: 'gold',
   PACKED: 'gold',
   SHIPPED: 'gold',
+  AT_HUB: 'gold',
+  OUT_FOR_DELIVERY: 'gold',
   DELIVERED: 'green',
   CANCELLED: 'muted'
 };
@@ -33,7 +37,9 @@ export const FULFILMENT_NEXT = {
   PAYMENT_APPROVED: 'PROCESSING',
   PROCESSING: 'PACKED',
   PACKED: 'SHIPPED',
-  SHIPPED: 'DELIVERED'
+  SHIPPED: 'AT_HUB',
+  AT_HUB: 'OUT_FOR_DELIVERY',
+  OUT_FOR_DELIVERY: 'DELIVERED'
 };
 
 export const ORDER_FLOW = [
@@ -43,4 +49,6 @@ export const ORDER_FLOW = [
 'PROCESSING',
 'PACKED',
 'SHIPPED',
+'AT_HUB',
+'OUT_FOR_DELIVERY',
 'DELIVERED'];

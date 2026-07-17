@@ -7,11 +7,11 @@ export function createApi({ baseUrl, tokens }) {
   return {
     client: c,
     auth: {
-      requestOtp: (mobile, purpose = 'LOGIN') => c.post('/auth/otp/request', { mobile, purpose }),
-      verifyOtp: async (mobile, code, opts = {}) => { const r = await c.post('/auth/otp/verify', { mobile, code, ...opts }); setTokens(r); return r; },
+      register: async (body) => { const r = await c.post('/auth/register', body); setTokens(r); return r; },
+      login: async (identifier, password) => { const r = await c.post('/auth/login', { identifier, password }); setTokens(r); return r; },
       staffLogin: async (mobile, password) => { const r = await c.post('/auth/staff/login', { mobile, password }); setTokens(r); return r; },
-      otpConfig: () => c.get('/auth/otp/config'),
-      verifyMsg91: async (accessToken, name) => { const r = await c.post('/auth/msg91/verify', { accessToken, name }); setTokens(r); return r; },
+      forgotVerify: (mobile, email) => c.post('/auth/forgot/verify', { mobile, email }),
+      forgotReset: (mobile, email, newPassword) => c.post('/auth/forgot/reset', { mobile, email, newPassword }),
       logout: () => c.post('/auth/logout', { refreshToken: c.tokens.getRefresh() }).finally(() => c.tokens.set(null, null)),
       me: () => c.get('/auth/me'),
     },
@@ -21,6 +21,7 @@ export function createApi({ baseUrl, tokens }) {
       categories: () => c.get('/products/categories'),
       createCategory: (body) => c.post('/products/categories', body),
       updateCategory: (id, body) => c.patch(`/products/categories/${id}`, body),
+      deleteCategory: (id) => c.del(`/products/categories/${id}`),
       create: (body) => c.post('/products', body),
       update: (id, body) => c.patch(`/products/${id}`, body),
     },
@@ -35,6 +36,8 @@ export function createApi({ baseUrl, tokens }) {
       addTracking: (orderId, body) => c.post(`/orders/${orderId}/tracking`, body),
       updateItemPrice: (orderId, index, unitPrice) => c.patch(`/orders/${orderId}/item-price`, { index, unitPrice }),
       setCharges: (orderId, body) => c.patch(`/orders/${orderId}/charges`, body),
+      cancel: (orderId, note) => c.patch(`/orders/${orderId}/cancel`, { note }),
+      remove: (orderId) => c.del(`/orders/${orderId}`),
     },
     analytics: {
       overview: () => c.get('/analytics/overview'),
@@ -43,6 +46,10 @@ export function createApi({ baseUrl, tokens }) {
     },
     account: {
       saveLocation: (loc) => c.put('/account/location', loc),
+      locations: () => c.get('/account/locations'),
+      addLocation: (loc) => c.post('/account/locations', loc),
+      removeLocation: (id) => c.del(`/account/locations/${id}`),
+      setDefaultLocation: (id) => c.patch(`/account/locations/${id}/default`),
       wishlists: () => c.get('/account/wishlists'),
       createWishlist: (name) => c.post('/account/wishlists', { name }),
       toggleWishlistItem: (index, productId) => c.post(`/account/wishlists/${index}/items`, { productId }),
@@ -50,6 +57,14 @@ export function createApi({ baseUrl, tokens }) {
     customers: {
       list: (q) => c.get('/customers', q),
       detail: (id) => c.get(`/customers/${id}`),
+      remove: (id) => c.del(`/customers/${id}`),
+    },
+    support: {
+      create: (body) => c.post('/support', body),
+      list: (q) => c.get('/support', q),
+      resolve: (id) => c.patch(`/support/${id}/resolve`),
+      reopen: (id) => c.patch(`/support/${id}/reopen`),
+      remove: (id) => c.del(`/support/${id}`),
     },
     settings: {
       getPublic: () => c.get('/settings/public'),

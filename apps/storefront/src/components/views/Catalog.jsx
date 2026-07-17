@@ -28,7 +28,7 @@ export default function Catalog({ onCheckout, onNeedSignIn }) {
           <p>Sivakasi crackers at up to 60% off MRP. Pay by UPI, upload your screenshot, and we’ll pack your celebration.</p>
           <div className="trust">
             <span><ShieldCheck size={14} /> Licensed seller</span>
-            <span><Truck size={14} /> Safe delivery</span>
+            <span><Truck size={14} /> Delivery all over India</span>
             <span><Star size={14} /> 4.8 · 2,400+ orders</span>
           </div>
         </div>
@@ -61,12 +61,13 @@ function Card({ p, onNeedSignIn }) {
   const cart = useCart();
   const qty = cart.quantityOf(p.id);
   const hue = hueFor(p.id);
+  const imgUrl = (p.images && (p.images.find((i) => i.isPrimary) || p.images[0]) || {}).url;
   const sell = p.display?.sellingPrice ?? p.sellingPrice;
   const off = p.display?.savedPercent ?? 0;
   return (
     <div className="card">
-      <div className="card-img" style={{ background: `linear-gradient(150deg, hsl(${hue} 75% 62%), hsl(${(hue + 40) % 360} 80% 48%))` }}>
-        <Sparkles size={30} className="card-spark" />
+      <div className="card-img" style={imgUrl ? undefined : { background: `linear-gradient(150deg, hsl(${hue} 75% 62%), hsl(${(hue + 40) % 360} 80% 48%))` }}>
+        {imgUrl ? <img src={imgUrl} alt={p.name} className="card-photo" loading="lazy" /> : <Sparkles size={30} className="card-spark" />}
         {off > 0 && <span className="card-off">{Math.round(off)}% off</span>}
         <WishlistHeart productId={p.id} onNeedSignIn={onNeedSignIn} />
       </div>

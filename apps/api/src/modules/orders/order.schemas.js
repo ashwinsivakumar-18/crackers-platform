@@ -15,7 +15,7 @@ module.exports = {
   }),
   reviewSchema: z.object({ decision: z.enum(['APPROVE', 'REJECT', 'REQUEST_NEW']), note: z.string().optional() }),
   statusSchema: z.object({
-    status: z.enum(['PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+    status: z.enum(['PROCESSING', 'PACKED', 'SHIPPED', 'AT_HUB', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED']),
     note: z.string().optional(),
   }),
   listQuery: z.object({ status: z.string().optional(), page: z.string().optional(), limit: z.string().optional() }),
@@ -33,5 +33,7 @@ module.exports.ALLOWED_TRANSITIONS = {
   PAYMENT_APPROVED: ['PROCESSING', 'CANCELLED'],
   PROCESSING: ['PACKED', 'CANCELLED'],
   PACKED: ['SHIPPED', 'CANCELLED'],
-  SHIPPED: ['DELIVERED'],
+  SHIPPED: ['AT_HUB', 'CANCELLED'],
+  AT_HUB: ['OUT_FOR_DELIVERY'],
+  OUT_FOR_DELIVERY: ['DELIVERED'],
 };

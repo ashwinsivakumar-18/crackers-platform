@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, X, Plus, MessageCircle, Check, Trash2, ReceiptText } from 'lucide-react';
+import { ChevronRight, X, Plus, MessageCircle, Check, Trash2, ReceiptText, Ban } from 'lucide-react';
 import { api } from '../../lib/api';
 import { rupee, STATUS_LABEL, FULFILMENT_NEXT, ORDER_FLOW } from '../../lib/format';
 import { useAsync, Loading, ErrorState, StatusBadge } from '../ui';
@@ -81,6 +81,10 @@ function OrderDrawer({ id, onClose, onChanged }) {
     finally { setBusy(false); }
   };
 
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const cancelOrder = async () => { setBusy(true); try { await api.orders.cancel(id); await refresh(); } finally { setBusy(false); } };
+  const removeOrder = async () => { setBusy(true); try { await api.orders.remove(id); onChanged(); onClose(); } finally { setBusy(false); } };
+
   const next = order ? FULFILMENT_NEXT[order.status] : undefined;
   const reachedIndex = order ? ORDER_FLOW.indexOf(order.status) : -1;
 
@@ -149,6 +153,23 @@ function OrderDrawer({ id, onClose, onChanged }) {
               {ORDER_FLOW.filter((_, idx) => idx <= reachedIndex).map((s) => (
                 <div className="tl-item done" key={s}><span /> {STATUS_LABEL[s]}</div>
               ))}
+            </div>
+
+            <div className="danger-zone">
+              {order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && (
+                <button className="btn btn-ghost wide" disabled={busy} onClick={cancelOrder}><Ban size={15} /> Cancel order (notify customer)</button>
+              )}
+              {!confirmRemove ? (
+                <button className="btn btn-danger wide" style={{ marginTop: 8 }} onClick={() => setConfirmRemove(true)}><Trash2 size={15} /> Remove from management</button>
+              ) : (
+                <div className="confirm-del" style={{ marginTop: 8 }}>
+                  <p className="muted sm">Remove this order permanently from your management? {order.status !== 'CANCELLED' && order.status !== 'DELIVERED' ? 'Its stock will be returned.' : ''}</p>
+                  <div className="cd-actions">
+                    <button className="btn btn-ghost" onClick={() => setConfirmRemove(false)}>Cancel</button>
+                    <button className="btn btn-danger" disabled={busy} onClick={removeOrder}>{busy ? 'Removing…' : 'Yes, remove'}</button>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}

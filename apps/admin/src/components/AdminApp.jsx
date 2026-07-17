@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard, ShieldCheck, ReceiptText, Boxes, Warehouse, Users, Sparkles, Settings as SettingsIcon, LogOut, Bell } from
+  LayoutDashboard, ShieldCheck, ReceiptText, Boxes, Warehouse, Users, LifeBuoy, Sparkles, Settings as SettingsIcon, LogOut, Bell } from
 'lucide-react';
 import { api } from '../lib/api';
 import { LivePill } from './ui';
@@ -12,6 +12,7 @@ import Orders from './views/Orders';
 import Inventory from './views/Inventory';
 import Catalog from './views/Catalog';
 import Customers from './views/Customers';
+import Support from './views/Support';
 import Settings from './views/Settings';
 
 
@@ -23,6 +24,7 @@ const NAV = [
 { k: 'inventory', label: 'Inventory', icon: Warehouse },
 { k: 'catalog', label: 'Catalog', icon: Boxes },
 { k: 'customers', label: 'Customers', icon: Users },
+{ k: 'support', label: 'Support', icon: LifeBuoy },
 { k: 'settings', label: 'Settings', icon: SettingsIcon }];
 
 
@@ -33,6 +35,7 @@ const SUBTITLE = {
   inventory: 'Categories, products, images and pricing',
   catalog: 'Products, pricing and stock',
   customers: 'Everyone who signed in',
+  support: 'Customer queries & enquiries',
   settings: 'Billing template & defaults',
     };
 
@@ -68,7 +71,7 @@ export default function AdminApp() {
       <aside className="side">
         <div className="brand">
           <div className="brand-mark"><Sparkles size={16} /></div>
-          <div><div className="brand-name">Sri Lakshmi</div><div className="brand-sub">Crackers · Ops</div></div>
+          <div><div className="brand-name">Sivakumar</div><div className="brand-sub">Crackers · Ops</div></div>
         </div>
         <nav className="nav">
           {NAV.map((n) => {
@@ -108,6 +111,7 @@ export default function AdminApp() {
           {view === 'inventory' && <Inventory />}
           {view === 'catalog' && <Catalog />}
                     {view === 'customers' && <Customers />}
+          {view === 'support' && <Support />}
           {view === 'settings' && <Settings />}
         </div>
       </main>

@@ -24,6 +24,20 @@ async function authenticate(req, res, next) {
   }
 }
 
+// Like authenticate, but never fails — sets req.user when a valid token is present.
+async function optionalAuthenticate(req, res, next) {
+  try {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    if (token) {
+      const payload = verifyAccess(token);
+      const user = await User.findById(payload.sub).lean();
+      if (user) req.user = { id: String(user._id), mobile: user.mobile, name: user.name, isStaff: user.isStaff, permissions: user.permissions || [] };
+    }
+  } catch (e) { /* ignore — treat as guest */ }
+  next();
+}
+
 const requireStaff = (req, res, next) => {
   if (!req.user || !req.user.isStaff) return next(ApiError.forbidden('Staff only'));
   next();
@@ -34,4 +48,4 @@ const requirePermission = (perm) => (req, res, next) => {
   next();
 };
 
-module.exports = { authenticate, requireStaff, requirePermission };
+module.exports = { authenticate, optionalAuthenticate, requireStaff, requirePermission };

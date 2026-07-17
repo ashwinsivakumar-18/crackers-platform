@@ -21,8 +21,13 @@ export default function AccountScreen({ navigation }) {
       </View>
       <View style={s.card}>
         <Item icon="📦" label="Orders" to="Orders" />
+        <Item icon="🚚" label="Track order" to="TrackOrders" />
         <Item icon="📍" label="Details & location" to="Location" />
         <Item icon="❤️" label="Wishlists" to="Wishlists" />
+        <Item icon="❓" label="How to order" to="HowToOrder" />
+        <Item icon="🎁" label="Bulk orders" to="BulkOrders" />
+        <Item icon="🛟" label="Help & Support" to="Support" />
+        <Item icon="ℹ️" label="About us" to="About" />
       </View>
       <TouchableOpacity style={s.signout} onPress={auth.logout}><Text style={s.signoutTxt}>Sign out</Text></TouchableOpacity>
     </View>

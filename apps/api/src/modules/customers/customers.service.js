@@ -1,4 +1,4 @@
-const { User, Order } = require('../../models');
+const { User, Order, RefreshToken } = require('../../models');
 const { parsePagination, buildMeta } = require('../../utils/pagination');
 const { ApiError } = require('../../utils/apiError');
 
@@ -41,6 +41,17 @@ const customersService = {
         orders: orders.map((o) => ({ id: String(o._id), orderNumber: o.orderNumber, total: o.total, status: o.status, placedAt: o.placedAt || o.createdAt })),
       },
     };
+  },
+
+  // Delete a customer's account + personal data. Past orders are kept as business
+  // records but are no longer linked to a live account.
+  async remove(id) {
+    const u = await User.findById(id);
+    if (!u) throw ApiError.notFound('Customer not found');
+    if (u.isStaff) throw ApiError.badRequest('Cannot delete a staff account');
+    await RefreshToken.deleteMany({ userId: u._id });
+    await User.deleteOne({ _id: u._id });
+    return { deleted: true };
   },
 };
 module.exports = { customersService };

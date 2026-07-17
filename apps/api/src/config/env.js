@@ -39,16 +39,11 @@ const env = {
     token: process.env.WHATSAPP_API_TOKEN || '',
   },
 
-  msg91: {
-    authKey: process.env.MSG91_AUTH_KEY || '',       // server secret — verifies the widget token
-    widgetId: process.env.MSG91_WIDGET_ID || '',     // public — used by the client SDK
-    widgetToken: process.env.MSG91_WIDGET_TOKEN || '', // public widget token — used by the client SDK
-  },
-
+  supportPhone: process.env.SUPPORT_PHONE || '',
   minOrderAmount: parseInt(process.env.MIN_ORDER_AMOUNT || '3500', 10),
   packTransportPct: parseFloat(process.env.PACK_TRANSPORT_PCT || '5'),
 
-  storeName: process.env.STORE_NAME || 'Sri Lakshmi Crackers',
+  storeName: process.env.STORE_NAME || 'Sivakumar Crackers',
   storeUpiId: process.env.STORE_UPI_ID || 'store@upi',
 };
 

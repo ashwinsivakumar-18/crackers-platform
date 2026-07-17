@@ -11,8 +11,7 @@
     "@crackers/api-client": "*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "lucide-react": "^0.400.0",
-    "@msg91comm/sendotp-sdk": "^1.0.6"
+    "lucide-react": "^0.400.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

@@ -1,7 +1,42 @@
 const { User } = require('../../models');
 const { ApiError } = require('../../utils/apiError');
 
+const locOut = (u) => ({ locations: (u.savedLocations || []).map((l) => ({ ...(l.toObject ? l.toObject() : l), id: String(l._id) })) });
+
 const accountService = {
+  async locations(userId) {
+    const u = await User.findById(userId).lean();
+    if (!u) throw ApiError.notFound('User not found');
+    return { locations: (u.savedLocations || []).map((l) => ({ ...l, id: String(l._id) })) };
+  },
+  async addLocation(userId, loc) {
+    const u = await User.findById(userId);
+    if (!u) throw ApiError.notFound('User not found');
+    if ((u.savedLocations || []).length >= 5) throw ApiError.badRequest('You can save up to 5 locations');
+    const makeDefault = loc.isDefault || u.savedLocations.length === 0;
+    if (makeDefault) u.savedLocations.forEach((l) => { l.isDefault = false; });
+    u.savedLocations.push({ ...loc, isDefault: makeDefault });
+    await u.save();
+    return locOut(u);
+  },
+  async removeLocation(userId, id) {
+    const u = await User.findById(userId);
+    if (!u) throw ApiError.notFound('User not found');
+    const doc = u.savedLocations.id(id);
+    const wasDefault = doc && doc.isDefault;
+    u.savedLocations.pull(id);
+    if (wasDefault && u.savedLocations.length) u.savedLocations[0].isDefault = true;
+    await u.save();
+    return locOut(u);
+  },
+  async setDefaultLocation(userId, id) {
+    const u = await User.findById(userId);
+    if (!u) throw ApiError.notFound('User not found');
+    u.savedLocations.forEach((l) => { l.isDefault = String(l._id) === id; });
+    await u.save();
+    return locOut(u);
+  },
+
   async saveLocation(userId, loc) {
     const user = await User.findByIdAndUpdate(userId, { location: loc }, { new: true });
     if (!user) throw ApiError.notFound('User not found');

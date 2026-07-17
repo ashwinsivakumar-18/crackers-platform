@@ -7,4 +7,5 @@ module.exports = {
   categories: async (req, res) => res.json(await productService.categories()),
   createCategory: async (req, res) => res.status(201).json(await productService.createCategory(req.body)),
   updateCategory: async (req, res) => res.json(await productService.updateCategory(req.params.id, req.body)),
+  deleteCategory: async (req, res) => res.json(await productService.deleteCategory(req.params.id)),
 };

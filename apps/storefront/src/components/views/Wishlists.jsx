@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Heart, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Heart, Plus, Trash2, ShoppingBag, Sparkles } from 'lucide-react';
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
 import { useAsync, Loading, ErrorState } from '../ui';
@@ -38,11 +38,13 @@ export default function Wishlists() {
             <div className="wl-items">
               {w.products.map((p) => {
                 const sell = p.sellingPrice ?? p.mrp;
+                const img = (p.images && (p.images.find((i) => i.isPrimary) || p.images[0]) || {}).url;
                 return (
                   <div className="wl-item" key={p._id || p.id}>
-                    <div><div className="b">{p.name}</div><div className="mono">{rupee(sell)}</div></div>
+                    <div className="wl-thumb">{img ? <img src={img} alt={p.name} loading="lazy" /> : <Sparkles size={16} />}</div>
+                    <div className="wl-mid"><div className="b">{p.name}</div><div className="mono">{rupee(sell)}</div></div>
                     <div className="wl-actions">
-                      <button className="icon-btn sm" title="Add to cart" onClick={() => cart.add({ id: String(p._id || p.id), name: p.name, sellingPrice: sell, display: { sellingPrice: sell, mrp: p.mrp } })}><ShoppingBag size={15} /></button>
+                      <button className="icon-btn sm" title="Add to cart" onClick={() => cart.add({ id: String(p._id || p.id), name: p.name, sellingPrice: sell, images: p.images, display: { sellingPrice: sell, mrp: p.mrp } })}><ShoppingBag size={15} /></button>
                       <button className="icon-btn sm" title="Remove" onClick={() => removeItem(w.index, String(p._id || p.id))}><Trash2 size={15} /></button>
                     </div>
                   </div>

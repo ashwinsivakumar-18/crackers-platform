@@ -26,7 +26,7 @@ export default function Login({ onLoggedIn }) {
     <div className="login">
       <div className="login-card">
         <div className="brand-mark big"><Sparkles size={20} /></div>
-        <h2>Sri Lakshmi Crackers</h2>
+        <h2>Sivakumar Crackers</h2>
         <p className="muted">Operations console</p>
         <label>Staff mobile</label>
         <input className="field mono" value={mobile} onChange={(e) => setMobile(e.target.value)} />

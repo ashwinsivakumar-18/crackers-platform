@@ -117,9 +117,9 @@ h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;margin:0;letter-spacing:-.
 .slip-foot{background:var(--paper);text-align:center;font-size:10.5px;color:var(--muted);padding:8px}
 
 /* drawer */
-.scrim{position:fixed;inset:0;background:rgba(32,22,15,.34);z-index:20;animation:fade .2s}
+.scrim{position:fixed;inset:0;background:rgba(32,22,15,.42);z-index:40;animation:fade .2s}
 @keyframes fade{from{opacity:0}}
-.drawer{position:fixed;top:0;right:0;height:100vh;width:380px;background:#fff;border-left:1px solid var(--line);z-index:21;padding:22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;animation:slide .22s cubic-bezier(.2,.7,.2,1)}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:380px;background:#fff;border-left:1px solid var(--line);z-index:41;padding:22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;animation:slide .22s cubic-bezier(.2,.7,.2,1)}
 @keyframes slide{from{transform:translateX(30px);opacity:.5}}
 .drawer-head{display:flex;justify-content:space-between;align-items:center}
 .drawer-cust{font-size:14px}
@@ -163,9 +163,9 @@ h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;margin:0;letter-spacing:-.
 .field:focus{border-color:var(--ember)}
 textarea.field{resize:vertical;line-height:1.55}
 .row-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.scrim{position:fixed;inset:0;background:rgba(32,22,15,.34);z-index:30;animation:fade .2s}
+.scrim{position:fixed;inset:0;background:rgba(32,22,15,.42);z-index:40;animation:fade .2s}
 @keyframes fade{from{opacity:0}}
-.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:520px;max-width:94vw;max-height:90vh;overflow:auto;background:#fff;border-radius:18px;z-index:31}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:520px;max-width:94vw;max-height:90vh;overflow:auto;background:#fff;border-radius:18px;z-index:42;box-shadow:0 30px 80px -20px rgba(0,0,0,.45)}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}
 .modal-body{padding:20px;display:flex;flex-direction:column;gap:12px}
 .btn-ink{background:var(--ink);color:#fff;border:1px solid var(--ink);display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
@@ -244,3 +244,27 @@ textarea.field{resize:vertical;line-height:1.55}
 .tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;vertical-align:middle;margin-left:6px}
 .tag-buyer{background:#E3F4EA;color:var(--green)}
 .tag-contact{background:#EFEAE1;color:var(--muted)}
+
+.stk{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle}
+.stk.low{background:#FCEFD6;color:var(--gold,#E69A1F)}
+.stk.out{background:#FDECEA;color:var(--ember);font-size:12px;padding:3px 8px}
+
+.danger-zone{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+.btn-danger.wide{width:100%;justify-content:center}
+.confirm-del{background:#FDECEA;border-radius:12px;padding:14px}
+.cd-actions{display:flex;gap:10px;margin-top:10px}
+.cd-actions .btn{flex:1;justify-content:center}
+
+/* ---- support tickets ---- */
+.ticket-list{display:flex;flex-direction:column;gap:12px}
+.ticket{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.ticket-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tk-type{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:#EAF2FF;color:#2563eb;margin-right:6px}
+.tk-type.enq{background:#F3EAFE;color:#7c3aed}
+.tk-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px}
+.tk-status.open{background:#FCEFD6;color:var(--gold,#E69A1F)}
+.tk-status.done{background:#E3F4EA;color:var(--green)}
+.tk-subject{font-weight:700;color:var(--ink);margin-bottom:4px}
+.tk-msg{color:var(--ink);font-size:14px;line-height:1.5;white-space:pre-wrap}
+.tk-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px}
+.tk-actions{display:flex;align-items:center;gap:8px}

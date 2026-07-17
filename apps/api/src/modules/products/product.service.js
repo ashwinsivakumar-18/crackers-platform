@@ -66,5 +66,12 @@ const productService = {
     if (!category) throw ApiError.notFound('Category not found');
     return { category: { ...category.toObject(), id: String(category._id) } };
   },
+  async deleteCategory(id) {
+    const count = await Product.countDocuments({ categoryId: id });
+    if (count > 0) throw ApiError.badRequest(`This category still has ${count} product(s). Move or delete them first.`);
+    const category = await Category.findByIdAndDelete(id);
+    if (!category) throw ApiError.notFound('Category not found');
+    return { deleted: true };
+  },
 };
 module.exports = { productService };

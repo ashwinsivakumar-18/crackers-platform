@@ -1,13 +1,13 @@
 const { z } = require('zod');
-const mobile = z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile');
+const mobile = z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile');
+const password = z.string().min(6, 'Password must be at least 6 characters');
+const email = z.string().email('Enter a valid email');
+
 module.exports = {
-  requestOtpSchema: z.object({ mobile, purpose: z.enum(['LOGIN', 'REGISTER']).default('LOGIN') }),
-  verifyOtpSchema: z.object({
-    mobile, code: z.string().min(4),
-    purpose: z.enum(['LOGIN', 'REGISTER']).default('LOGIN'),
-    name: z.string().optional(),
-  }),
+  registerSchema: z.object({ name: z.string().min(1), mobile, email, password }),
+  loginSchema: z.object({ identifier: z.string().min(3), password: z.string().min(1) }),
   staffLoginSchema: z.object({ mobile, password: z.string().min(6) }),
+  forgotVerifySchema: z.object({ mobile, email }),
+  forgotResetSchema: z.object({ mobile, email, newPassword: password }),
   refreshSchema: z.object({ refreshToken: z.string() }),
-  msg91Schema: z.object({ accessToken: z.string().min(10), name: z.string().optional() }),
 };

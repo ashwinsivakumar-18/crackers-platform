@@ -15,6 +15,7 @@ export default function OrderPlaced({ order, onContinue }) {
       <div className="done-card">
         <div className="done-tick"><PartyPopper size={26} /></div>
         <h2>Order placed!</h2>
+      <p className="hub-note">🇮🇳 We deliver all over India — your order reaches your nearby Delivery Hub.</p>
         <p>Your celebration is on the way.</p>
         <div className="done-no">Order <b className="mono">{order.orderNumber}</b></div>
 

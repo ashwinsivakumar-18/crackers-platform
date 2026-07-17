@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Package, MapPin, Heart, LogOut, ChevronDown } from 'lucide-react';
+import { User, Package, Truck, MapPin, Heart, LifeBuoy, Gift, HelpCircle, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 
 export default function UserMenu({ onNavigate, onSignIn }) {
@@ -22,8 +22,12 @@ export default function UserMenu({ onNavigate, onSignIn }) {
           <div className="um-pop">
             <div className="um-head"><span className="avatar lg">{initial}</span><div><b>{user.name || 'Welcome'}</b><div className="muted sm mono">{user.mobile}</div></div></div>
             <button className="um-item" onClick={() => go('orders')}><Package size={16} /> Orders</button>
+            <button className="um-item" onClick={() => go('tracking')}><Truck size={16} /> Track order</button>
             <button className="um-item" onClick={() => go('details')}><MapPin size={16} /> Details & location</button>
             <button className="um-item" onClick={() => go('wishlists')}><Heart size={16} /> Wishlists</button>
+            <button className="um-item" onClick={() => go('howto')}><HelpCircle size={16} /> How to order</button>
+            <button className="um-item" onClick={() => go('support')}><LifeBuoy size={16} /> Help & Support</button>
+            <button className="um-item" onClick={() => go('bulk')}><Gift size={16} /> Bulk orders</button>
             <button className="um-item danger" onClick={() => { setOpen(false); logout(); }}><LogOut size={16} /> Sign out</button>
           </div>
         </>

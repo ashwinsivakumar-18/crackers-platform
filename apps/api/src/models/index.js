@@ -5,4 +5,5 @@ module.exports = {
   ...require('./order.model'),
   ...require('./misc.model'),
   ...require('./settings.model'),
+  ...require('./support.model'),
 };

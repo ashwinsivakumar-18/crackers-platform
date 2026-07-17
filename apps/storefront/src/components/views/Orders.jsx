@@ -5,7 +5,7 @@ import { ChevronRight, Package } from 'lucide-react';
 
 const LABEL = {
   PENDING_PAYMENT: 'Awaiting payment', PAYMENT_UPLOADED: 'Verifying payment', PAYMENT_APPROVED: 'Payment approved',
-  PROCESSING: 'Preparing', PACKED: 'Packed', SHIPPED: 'On the way', DELIVERED: 'Delivered', CANCELLED: 'Cancelled',
+  PROCESSING: 'Preparing', PACKED: 'Packed', SHIPPED: 'On the way', AT_HUB: 'At your Delivery Hub', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered', CANCELLED: 'Cancelled',
 };
 
 export default function Orders({ onOpen }) {

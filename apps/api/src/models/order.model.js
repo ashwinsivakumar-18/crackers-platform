@@ -2,7 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const ORDER_STATUSES = [
   'PENDING_PAYMENT', 'PAYMENT_UPLOADED', 'PAYMENT_VERIFICATION', 'PAYMENT_APPROVED',
-  'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED',
+  'PROCESSING', 'PACKED', 'SHIPPED', 'AT_HUB', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
 ];
 
 const itemSchema = new Schema({

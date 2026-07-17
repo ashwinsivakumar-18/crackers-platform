@@ -9,6 +9,7 @@ export default function OrderPlacedScreen({ route, navigation }) {
       <Text style={s.emoji}>🎉</Text>
       <Text style={s.h}>Order placed!</Text>
       <Text style={s.no}>Order {order.orderNumber}</Text>
+      <Text style={s.hub}>🇮🇳 We deliver all over India — your order reaches your nearby Delivery Hub.</Text>
       <View style={s.banner}>
         <Text style={s.bTitle}>We're verifying your payment</Text>
         <Text style={s.bSub}>You'll get a WhatsApp once it's approved — usually within a few hours.</Text>
@@ -21,6 +22,7 @@ export default function OrderPlacedScreen({ route, navigation }) {
 const s = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: theme.paper, padding: 24, justifyContent: 'center', alignItems: 'center' },
   emoji: { fontSize: 56 }, h: { fontSize: 24, fontWeight: '800', color: theme.ink, marginTop: 8 },
+  hub: { color: '#7a6a5f', textAlign: 'center', marginTop: 10, fontSize: 12.5, paddingHorizontal: 20 },
   no: { color: theme.muted, marginTop: 4, marginBottom: 20 },
   banner: { backgroundColor: theme.emberSoft, borderRadius: 14, padding: 16, marginBottom: 20 },
   bTitle: { fontWeight: '700', color: theme.ember }, bSub: { color: theme.ink, marginTop: 4, textAlign: 'center' },

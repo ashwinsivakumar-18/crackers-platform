@@ -45,6 +45,6 @@ Web apps read `VITE_API_URL` (default `http://localhost:4000/api/v1`). The mobil
 
 ## Notes
 - Backend is CommonJS; the React apps + client are ES modules; the mobile app is Expo/React Native.
-- Customer login uses the **MSG91 OTP widget** (client SDK) verified server-side; set MSG91 keys in `apps/api/.env`.
+- Customer accounts use **email/phone + password** (register, login, forgot-password); staff use password login.
 - Validation uses zod; auth uses JWT + argon2 with refresh-token rotation; uploads go to S3/MinIO
   (env-gated — without keys, a placeholder URL is returned).

@@ -1,28 +1,20 @@
-import { useState } from 'react';
-import { ArrowLeft, Truck, FileText, CheckCircle2, MapPin } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
 import { useAsync, Loading, ErrorState } from '../ui';
 
-const STORE = 'Sri Lakshmi Crackers';
-const FLOW = ['PAYMENT_APPROVED', 'PROCESSING', 'PACKED', 'SHIPPED', 'DELIVERED'];
-const FLOW_LABEL = { PAYMENT_APPROVED: 'Confirmed', PROCESSING: 'Preparing', PACKED: 'Packed', SHIPPED: 'On the way', DELIVERED: 'Delivered' };
+const STORE = 'Sivakumar Crackers';
 
 export default function OrderDetail({ id, onBack }) {
-  const [tab, setTab] = useState('invoice');
   const { data, loading, error, reload } = useAsync(() => api.orders.detail(id), [id]);
   const order = data?.order;
-
   return (
     <div className="cust-page">
       <button className="back" onClick={onBack}><ArrowLeft size={16} /> Back to orders</button>
       {loading || !order ? (error ? <ErrorState message={error} onRetry={reload} /> : <Loading />) : (
         <>
-          <div className="tabs">
-            <button className={`tab ${tab === 'invoice' ? 'on' : ''}`} onClick={() => setTab('invoice')}><FileText size={15} /> Invoice</button>
-            <button className={`tab ${tab === 'tracking' ? 'on' : ''}`} onClick={() => setTab('tracking')}><Truck size={15} /> Tracking</button>
-          </div>
-          {tab === 'invoice' ? <Invoice order={order} /> : <Tracking order={order} />}
+          <div className="inv-tag"><FileText size={15} /> Invoice</div>
+          <Invoice order={order} />
         </>
       )}
     </div>
@@ -60,43 +52,6 @@ function Invoice({ order }) {
         <div className="inv-line grand"><b>Total</b><b className="mono">{rupee(order.total)}</b></div>
       </div>
       <div className="inv-paid">Paid via UPI / bank transfer · verified by our team</div>
-    </div>
-  );
-}
-
-// Customer tracking — a truck crossing the points the admin adds.
-function Tracking({ order }) {
-  const reached = FLOW.indexOf(order.status);
-  const steps = order.trackingSteps || [];
-  return (
-    <div className="tracking">
-      {order.trackingId ? <div className="track-id">Tracking ID: <b className="mono">{order.trackingId}</b></div> : null}
-      <div className="track-flow">
-        {FLOW.map((s, i) => {
-          const done = reached >= i && reached >= 0;
-          const current = reached === i;
-          return (
-            <div className={`tf-step ${done ? 'done' : ''} ${current ? 'current' : ''}`} key={s}>
-              <div className="tf-dot">{current ? <Truck size={14} /> : done ? <CheckCircle2 size={14} /> : i + 1}</div>
-              <div className="tf-label">{FLOW_LABEL[s]}</div>
-              {i < FLOW.length - 1 && <div className={`tf-line ${reached > i ? 'done' : ''}`} />}
-            </div>
-          );
-        })}
-      </div>
-
-      {steps.length > 0 && (
-        <div className="track-points">
-          <div className="tp-title">Journey</div>
-          {steps.map((t, i) => (
-            <div className="tp-item" key={i}>
-              <span className="tp-mark"><MapPin size={13} /></span>
-              <div><b>{t.label}</b>{t.place ? <span className="muted"> · {t.place}</span> : null}<div className="muted sm">{new Date(t.at).toLocaleString('en-IN')}</div></div>
-            </div>
-          ))}
-        </div>
-      )}
-      {steps.length === 0 && <p className="muted" style={{ textAlign: 'center', marginTop: 20 }}>We'll post updates here as your order moves. 🚚</p>}
     </div>
   );
 }

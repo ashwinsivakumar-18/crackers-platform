@@ -17,4 +17,6 @@ r.patch('/:id/status', ...staff('order:update'), validate({ body: s.statusSchema
 r.post('/:id/tracking', ...staff('order:update'), validate({ body: s.trackingSchema }), asyncHandler(c.addTracking));
 r.patch('/:id/item-price', ...staff('order:update'), validate({ body: s.itemPriceSchema }), asyncHandler(c.updateItemPrice));
 r.patch('/:id/charges', ...staff('order:update'), validate({ body: s.chargesSchema }), asyncHandler(c.setCharges));
+r.patch('/:id/cancel', ...staff('order:update'), asyncHandler(c.cancel));
+r.delete('/:id', ...staff('order:update'), asyncHandler(c.remove));
 module.exports = r;

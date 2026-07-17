@@ -1,48 +1,22 @@
 import { useEffect, useState } from 'react';
-import { MapPin, LocateFixed, Save } from 'lucide-react';
+import { MapPin, Trash2, Star, Plus } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import LocationForm from '../LocationForm';
+import { Loading } from '../ui';
 
+// Profile: account details + manage saved delivery locations (up to 5).
 export default function Details() {
   const { user } = useAuth();
-  const [loc, setLoc] = useState({ lat: null, lng: null, line1: '', line2: '', city: '', state: '', pincode: '' });
-  const [status, setStatus] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [locations, setLocations] = useState(null);
+  const [adding, setAdding] = useState(false);
 
-  useEffect(() => {
-    api.auth.me().then((r) => { if (r.user && r.user.location) setLoc((l) => ({ ...l, ...r.user.location })); }).catch(() => {});
-  }, []);
+  const load = () => api.account.locations().then((r) => { setLocations(r.locations); setAdding(r.locations.length === 0); }).catch(() => setLocations([]));
+  useEffect(() => { load(); }, []);
 
-  // Zepto-style: read the browser's current location, then reverse-geocode to an address.
-  const useCurrentLocation = () => {
-    if (!navigator.geolocation) { setStatus('Location not supported on this device.'); return; }
-    setStatus('Getting your location…');
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const { latitude: lat, longitude: lng } = pos.coords;
-      setLoc((l) => ({ ...l, lat, lng }));
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, { headers: { 'Accept-Language': 'en' } });
-        const j = await res.json();
-        const a = j.address || {};
-        setLoc((l) => ({
-          ...l, lat, lng,
-          line1: [a.house_number, a.road].filter(Boolean).join(' ') || j.name || l.line1,
-          line2: [a.suburb, a.neighbourhood].filter(Boolean).join(', ') || l.line2,
-          city: a.city || a.town || a.village || a.county || l.city,
-          state: a.state || l.state,
-          pincode: a.postcode || l.pincode,
-        }));
-        setStatus('Location captured. Review the address and save.');
-      } catch { setStatus('Got coordinates. Add the address manually and save.'); }
-    }, () => setStatus('Could not get location — please allow permission.'), { enableHighAccuracy: true, timeout: 10000 });
-  };
-
-  const set = (k, v) => setLoc({ ...loc, [k]: v });
-  const save = async () => {
-    setBusy(true); setSaved(false);
-    try { await api.account.saveLocation(loc); setSaved(true); setStatus('Saved! Your store can see this.'); } finally { setBusy(false); }
-  };
+  const onSaved = (locs) => { setLocations(locs); setAdding(false); };
+  const remove = async (id) => { const r = await api.account.removeLocation(id); setLocations(r.locations); if (r.locations.length === 0) setAdding(true); };
+  const makeDefault = async (id) => { const r = await api.account.setDefaultLocation(id); setLocations(r.locations); };
 
   return (
     <div className="cust-page">
@@ -50,26 +24,28 @@ export default function Details() {
       <div className="detail-card">
         <div className="dl-row"><span className="muted">Name</span><b>{user?.name || '—'}</b></div>
         <div className="dl-row"><span className="muted">Mobile</span><b className="mono">{user?.mobile}</b></div>
+        {user?.email && <div className="dl-row"><span className="muted">Email</span><b>{user.email}</b></div>}
       </div>
 
-      <h3 className="sub-title"><MapPin size={16} /> Delivery location</h3>
-      <button className="btn btn-ember wide" onClick={useCurrentLocation}><LocateFixed size={16} /> Use my current location</button>
-      {status && <p className="muted sm" style={{ marginTop: 8 }}>{status}</p>}
-
-      {loc.lat && loc.lng && (
-        <iframe className="loc-map" title="your location" loading="lazy" src={`https://maps.google.com/maps?q=${loc.lat},${loc.lng}&z=16&output=embed`} />
-      )}
-
-      <div className="addr-grid">
-        <input className="field" placeholder="Address line 1 (house, street)" value={loc.line1} onChange={(e) => set('line1', e.target.value)} />
-        <input className="field" placeholder="Address line 2 (area, landmark)" value={loc.line2} onChange={(e) => set('line2', e.target.value)} />
-        <div className="row-2">
-          <input className="field" placeholder="City" value={loc.city} onChange={(e) => set('city', e.target.value)} />
-          <input className="field" placeholder="State" value={loc.state} onChange={(e) => set('state', e.target.value)} />
+      <h3 className="sub-title"><MapPin size={16} /> Delivery locations {locations ? `(${locations.length}/5)` : ''}</h3>
+      {locations === null ? <Loading /> : (
+        <div className="loc-pick">
+          {locations.map((l) => (
+            <div key={l.id} className={`loc-card ${l.isDefault ? 'on' : ''}`}>
+              <span className="lc-body">
+                <span className="lc-label"><MapPin size={13} /> {l.label || 'Address'} {l.isDefault && <span className="tag-default">Default</span>}</span>
+                <span className="lc-addr">{[l.line1, l.line2, l.line3].filter(Boolean).join(', ')}<br />{[l.city, l.state, l.pincode].filter(Boolean).join(', ')}</span>
+              </span>
+              <span style={{ display: 'flex', gap: 6 }}>
+                {!l.isDefault && <button className="lc-del" title="Set default" onClick={() => makeDefault(l.id)}><Star size={15} /></button>}
+                <button className="lc-del" title="Remove" onClick={() => remove(l.id)}><Trash2 size={15} /></button>
+              </span>
+            </div>
+          ))}
+          {!adding && locations.length < 5 && <button className="add-loc-btn" onClick={() => setAdding(true)}><Plus size={16} /> Add location</button>}
+          {adding && <LocationForm onSaved={onSaved} onCancel={locations.length ? () => setAdding(false) : undefined} />}
         </div>
-        <input className="field" placeholder="Pincode" value={loc.pincode} onChange={(e) => set('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))} />
-      </div>
-      <button className="btn btn-go wide" disabled={busy} onClick={save}><Save size={16} /> {busy ? 'Saving…' : saved ? 'Saved ✓' : 'Save location'}</button>
+      )}
     </div>
   );
 }

@@ -1,36 +1,67 @@
 
 import { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, Truck, Store, ArrowRight, Upload, Copy, Check, ShieldCheck, X } from 'lucide-react';
+import { ChevronLeft, Truck, ArrowRight, Upload, Copy, Check, ShieldCheck, X, ShoppingBag, MapPin, Plus, Trash2 } from 'lucide-react';
 
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
 import { useCart } from '../../lib/cart';
 import OtpLogin from '../OtpLogin';
+import LocationForm from '../LocationForm';
+import { Loading } from '../ui';
 
-const STORE_UPI = 'srilakshmicrackers@okhdfc';
+const STORE_UPI = 'sivakumarcrackers@okhdfc';
 
 export default function Checkout({ onBack, onPlaced }) {
   const cart = useCart();
-  const [step, setStep] = useState('details');
-  const [del, setDel] = useState('DELIVERY');
-  const [form, setForm] = useState({ name: '', mobile: '', address: '', pincode: '' });
+  const del = 'DELIVERY';
+  const [step, setStep] = useState(api.client.tokens.getAccess() ? 'details' : 'auth');
   const [cfg, setCfg] = useState({ minOrderAmount: 3500, packTransportPct: 5, storeUpiId: STORE_UPI });
+  const [me, setMe] = useState({ name: '', mobile: '' });
+  const [locations, setLocations] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [loadingLocs, setLoadingLocs] = useState(false);
 
   useEffect(() => { api.settings.getPublic().then((r) => setCfg((c) => ({ ...c, ...r }))).catch(() => {}); }, []);
 
+  // On the details step (logged in), load the account + saved locations.
+  useEffect(() => {
+    if (step !== 'details') return;
+    setLoadingLocs(true);
+    Promise.all([api.auth.me().catch(() => null), api.account.locations().catch(() => ({ locations: [] }))])
+      .then(([m, l]) => {
+        if (m && m.user) setMe({ name: m.user.name || '', mobile: m.user.mobile || '' });
+        const locs = l.locations || [];
+        setLocations(locs);
+        setSelectedId((prev) => prev || (locs.find((x) => x.isDefault) || {}).id || (locs[0] || {}).id || null);
+        setAdding(locs.length === 0);
+      })
+      .finally(() => setLoadingLocs(false));
+  }, [step]);
+
+  const selected = locations.find((l) => l.id === selectedId);
   const pct = cfg.packTransportPct;
-  const packTransport = del === 'STORE_PICKUP' ? 0 : Math.round((cart.subtotal * pct) / 100);
+  const packTransport = Math.round((cart.subtotal * pct) / 100);
   const total = cart.subtotal + packTransport;
   const belowMin = cart.subtotal < cfg.minOrderAmount;
   const shortBy = cfg.minOrderAmount - cart.subtotal;
 
-  const detailsOk = !belowMin && form.name && /^[6-9]\d{9}$/.test(form.mobile) && (
-  del === 'STORE_PICKUP' || form.address && /^\d{6}$/.test(form.pincode));
+  // Can only order with a saved delivery location (details + location) and above the minimum.
+  const detailsOk = !belowMin && !!selected;
 
-  const proceed = () => {
-    if (api.client.tokens.getAccess()) setStep('pay');else
-    setStep('auth');
-  };
+  const composedAddress = selected ? [selected.line1, selected.line2, selected.line3, selected.city, selected.state].filter(Boolean).join(', ') : '';
+  const onLocationsSaved = (locs) => { setLocations(locs); setAdding(false); const latest = locs[locs.length - 1]; if (latest) setSelectedId(latest.id); };
+  const removeLoc = async (id) => { const r = await api.account.removeLocation(id); setLocations(r.locations); if (selectedId === id) setSelectedId((r.locations.find((x) => x.isDefault) || r.locations[0] || {}).id || null); if (r.locations.length === 0) setAdding(true); };
+  const proceed = () => setStep('pay');
+
+  if (cart.count === 0) {
+    return (
+      <section className="checkout">
+        <button className="link-back" onClick={onBack}><ChevronLeft size={16} /> Back to shop</button>
+        <div className="cust-empty"><ShoppingBag size={40} /><h3>Your cart is empty</h3><p>Add some crackers to get started.</p><button className="btn btn-go" onClick={onBack}>Browse products</button></div>
+      </section>
+    );
+  }
 
   return (
     <section className="checkout">
@@ -41,30 +72,40 @@ export default function Checkout({ onBack, onPlaced }) {
           <div className="card-pane">
               <h3>Where should we send it?</h3>
               {belowMin && <div className="min-note">Minimum order is {rupee(cfg.minOrderAmount)}. Add {rupee(shortBy)} more to continue.</div>}
-              <div className="seg">
-                <button className={del === 'DELIVERY' ? 'on' : ''} onClick={() => setDel('DELIVERY')}><Truck size={16} /> Home delivery</button>
-                <button className={del === 'STORE_PICKUP' ? 'on' : ''} onClick={() => setDel('STORE_PICKUP')}><Store size={16} /> Store pickup</button>
-              </div>
-              <div className="fields">
-                <label className="fld"><span>Full name</span><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name" /></label>
-                <label className="fld"><span>Mobile</span><input className="mono" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })} placeholder="10-digit mobile" /></label>
-                {del === 'DELIVERY' && <>
-                  <label className="fld wide"><span>Delivery address</span><input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="House, street, area, city" /></label>
-                  <label className="fld"><span>Pincode</span><input className="mono" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })} placeholder="6-digit" /></label>
-                </>}
-              </div>
-              <button className="btn btn-go wide" disabled={!detailsOk} onClick={proceed}>Continue to payment <ArrowRight size={17} /></button>
+              <div className="deliver-note"><Truck size={16} /> {me.name || 'Your account'}{me.mobile ? ` · ${me.mobile}` : ''} — home delivery</div>
+              <div className="hub-note">🇮🇳 We deliver all over India — your order reaches your nearby Delivery Hub.</div>
+
+              {loadingLocs ? <Loading /> : (
+                <div className="loc-pick">
+                  {locations.map((l) => (
+                    <button key={l.id} className={`loc-card ${selectedId === l.id ? 'on' : ''}`} onClick={() => setSelectedId(l.id)}>
+                      <span className="loc-radio" />
+                      <span className="lc-body">
+                        <span className="lc-label"><MapPin size={13} /> {l.label || 'Address'} {l.isDefault && <span className="tag-default">Default</span>}</span>
+                        <span className="lc-addr">{[l.line1, l.line2, l.line3].filter(Boolean).join(', ')}<br />{[l.city, l.state, l.pincode].filter(Boolean).join(', ')}</span>
+                      </span>
+                      <span className="lc-del" onClick={(e) => { e.stopPropagation(); removeLoc(l.id); }}><Trash2 size={15} /></span>
+                    </button>
+                  ))}
+                  {!adding && locations.length > 0 && <button className="add-loc-btn" onClick={() => setAdding(true)}><Plus size={16} /> Add another location</button>}
+                  {adding && <LocationForm onSaved={onLocationsSaved} onCancel={locations.length ? () => setAdding(false) : undefined} />}
+                  {locations.length === 0 && !adding && <p className="muted sm">Add a delivery location to continue.</p>}
+                </div>
+              )}
+
+              <button className="btn btn-go wide" disabled={!detailsOk} onClick={proceed}>Confirm &amp; continue <ArrowRight size={17} /></button>
+              {!selected && !loadingLocs && locations.length > 0 && <p className="muted sm" style={{ textAlign: 'center' }}>Select a delivery location above.</p>}
             </div>
           }
 
           {step === 'auth' &&
           <div className="card-pane">
-              <OtpLogin onAuthed={() => setStep('pay')} />
+              <OtpLogin onAuthed={() => setStep('details')} />
             </div>
           }
 
           {step === 'pay' &&
-          <PayUpload total={total} deliveryType={del} pincode={form.pincode} storeUpi={cfg.storeUpiId} address={form.address}
+          <PayUpload total={total} deliveryType={del} pincode={selected ? selected.pincode : ''} storeUpi={cfg.storeUpiId} address={composedAddress}
           onBack={() => setStep('details')} onPlaced={onPlaced} />
           }
         </div>

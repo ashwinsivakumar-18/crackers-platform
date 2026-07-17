@@ -15,6 +15,7 @@ module.exports = {
     packTransportPct: env.packTransportPct,
     storeName: env.storeName,
     storeUpiId: env.storeUpiId,
+    supportPhone: env.supportPhone,
   }),
   getBilling: async (req, res) => {
     const doc = await Settings.findOne({ key: 'global' }).lean();

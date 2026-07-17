@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, ChevronRight, X, Phone, Mail, MapPin, MessageCircle, Package } from 'lucide-react';
+import { Search, ChevronRight, X, Phone, Mail, MapPin, MessageCircle, Package, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
 import { useAsync, Loading, ErrorState } from '../ui';
@@ -45,13 +45,16 @@ export default function Customers() {
         )}
       </div>
 
-      {openId && <Drawer id={openId} onClose={() => setOpenId(null)} />}
+      {openId && <Drawer id={openId} onClose={() => setOpenId(null)} onDeleted={() => { setOpenId(null); reload(); }} />}
     </>
   );
 }
 
-function Drawer({ id, onClose }) {
+function Drawer({ id, onClose, onDeleted }) {
   const { data, loading } = useAsync(() => api.customers.detail(id), [id]);
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const del = async () => { setDeleting(true); try { await api.customers.remove(id); onDeleted(); } finally { setDeleting(false); } };
   const c = data?.customer;
   const loc = c?.location;
   return (
@@ -85,6 +88,20 @@ function Drawer({ id, onClose }) {
             {c.orders.length === 0 ? <div className="muted sm">No orders yet.</div> : c.orders.map((o) => (
               <div className="detail-row" key={o.id}><span className="mono sm">{o.orderNumber}</span><span className="v mono">{rupee(o.total)} <span className="muted sm">· {o.status}</span></span></div>
             ))}
+
+            <div className="danger-zone">
+              {!confirming ? (
+                <button className="btn btn-danger wide" onClick={() => setConfirming(true)}><Trash2 size={15} /> Delete customer</button>
+              ) : (
+                <div className="confirm-del">
+                  <p className="muted sm">Permanently delete this customer's account and details? Past orders stay as records but will no longer be linked.</p>
+                  <div className="cd-actions">
+                    <button className="btn btn-ghost" onClick={() => setConfirming(false)}>Cancel</button>
+                    <button className="btn btn-danger" disabled={deleting} onClick={del}>{deleting ? 'Deleting…' : 'Yes, delete'}</button>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
       </aside>

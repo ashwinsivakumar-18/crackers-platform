@@ -10,6 +10,7 @@ const r = Router();
 r.get('/categories', asyncHandler(c.categories));
 r.post('/categories', ...staff('product:create'), validate({ body: s.categoryCreate }), asyncHandler(c.createCategory));
 r.patch('/categories/:id', ...staff('product:update'), validate({ body: s.categoryUpdate }), asyncHandler(c.updateCategory));
+r.delete('/categories/:id', ...staff('product:update'), asyncHandler(c.deleteCategory));
 r.get('/', validate({ query: s.listQuery }), asyncHandler(c.list));
 r.get('/:idOrSlug', asyncHandler(c.get));
 r.post('/', ...staff('product:create'), validate({ body: s.productCreate }), asyncHandler(c.create));

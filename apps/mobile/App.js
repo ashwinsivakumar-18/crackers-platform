@@ -18,6 +18,12 @@ import OrdersScreen from './src/screens/OrdersScreen';
 import OrderDetailScreen from './src/screens/OrderDetailScreen';
 import WishlistsScreen from './src/screens/WishlistsScreen';
 import LocationScreen from './src/screens/LocationScreen';
+import TrackOrdersScreen from './src/screens/TrackOrdersScreen';
+import TrackingScreen from './src/screens/TrackingScreen';
+import AboutScreen from './src/screens/AboutScreen';
+import SupportScreen from './src/screens/SupportScreen';
+import BulkOrdersScreen from './src/screens/BulkOrdersScreen';
+import HowToOrderScreen from './src/screens/HowToOrderScreen';
 
 const Stack = createNativeStackNavigator();
 const AccStack = createNativeStackNavigator();
@@ -27,7 +33,7 @@ const headerStyle = { headerStyle: { backgroundColor: theme.paper }, headerTitle
 function ShopStack() {
   return (
     <Stack.Navigator screenOptions={headerStyle}>
-      <Stack.Screen name="Shop" component={CatalogScreen} options={{ title: 'Sri Lakshmi Crackers' }} />
+      <Stack.Screen name="Shop" component={CatalogScreen} options={{ title: 'Sivakumar Crackers' }} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
       <Stack.Screen name="OrderPlaced" component={OrderPlacedScreen} options={{ title: 'Order placed', headerBackVisible: false }} />
@@ -43,6 +49,12 @@ function AccountStack() {
       <AccStack.Screen name="OrderDetail" component={OrderDetailScreen} options={{ title: 'Order' }} />
       <AccStack.Screen name="Wishlists" component={WishlistsScreen} options={{ title: 'Wishlists' }} />
       <AccStack.Screen name="Location" component={LocationScreen} options={{ title: 'Details & location' }} />
+      <AccStack.Screen name="TrackOrders" component={TrackOrdersScreen} options={{ title: 'Track your orders' }} />
+      <AccStack.Screen name="Tracking" component={TrackingScreen} options={{ title: 'Tracking' }} />
+      <AccStack.Screen name="HowToOrder" component={HowToOrderScreen} options={{ title: 'How to order' }} />
+      <AccStack.Screen name="BulkOrders" component={BulkOrdersScreen} options={{ title: 'Bulk orders' }} />
+      <AccStack.Screen name="Support" component={SupportScreen} options={{ title: 'Help & Support' }} />
+      <AccStack.Screen name="About" component={AboutScreen} options={{ title: 'About us' }} />
     </AccStack.Navigator>
   );
 }

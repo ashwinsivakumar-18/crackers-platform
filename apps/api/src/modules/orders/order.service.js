@@ -25,6 +25,10 @@ const orderService = {
       subtotal += unit * line.quantity;
     }
 
+    // Must have a delivery location (details + location) to order.
+    if (body.deliveryType !== 'STORE_PICKUP' && !(body.address && String(body.address).trim())) {
+      throw ApiError.badRequest('Add a delivery location before placing the order');
+    }
     // Minimum order value.
     if (subtotal < env.minOrderAmount) {
       throw ApiError.badRequest(`Minimum order is ₹${env.minOrderAmount.toLocaleString('en-IN')}. Add ₹${(env.minOrderAmount - subtotal).toLocaleString('en-IN')} more.`);
@@ -130,6 +134,29 @@ const orderService = {
     order.statusHistory.push({ status, note });
     await order.save();
     return { order: shape(order) };
+  },
+
+  // Store cancels an order from any active state -> customer sees CANCELLED; stock is returned.
+  async cancelOrder(orderId, note) {
+    const order = await Order.findById(orderId);
+    if (!order) throw ApiError.notFound('Order not found');
+    if (order.status === 'CANCELLED') return { order: shape(order) };
+    for (const it of order.items) await Product.updateOne({ _id: it.productId }, { $inc: { stock: it.quantity } });
+    order.status = 'CANCELLED';
+    order.statusHistory.push({ status: 'CANCELLED', note: note || 'Cancelled by store' });
+    await order.save();
+    return { order: shape(order) };
+  },
+
+  // Remove an order from admin entirely. Returns stock if it was still active (not delivered/cancelled).
+  async removeOrder(orderId) {
+    const order = await Order.findById(orderId);
+    if (!order) throw ApiError.notFound('Order not found');
+    if (order.status !== 'CANCELLED' && order.status !== 'DELIVERED') {
+      for (const it of order.items) await Product.updateOne({ _id: it.productId }, { $inc: { stock: it.quantity } });
+    }
+    await Order.deleteOne({ _id: orderId });
+    return { deleted: true };
   },
 
   async adminList(query) {

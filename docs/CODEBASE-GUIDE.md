@@ -18,7 +18,7 @@ Request path: `app.js` (helmet/cors/rate-limit) → module `*.routes.js` → `au
   `order` (items/proofs/history embedded), `crm` (Customer/Status/Communication/FollowUp),
   `campaign`, `misc` (Review/AuditLog). Barrel: `models/index.js`.
 - `src/modules/<m>/` — each has `*.schemas.js` (zod) · `*.service.js` · `*.controller.js` · `*.routes.js`:
-  `auth` (MSG91 OTP + staff), `products` (catalog+inventory), `orders` (manual-payment + billing + tracking),
+  `auth` (account register/login/forgot + staff), `products` (catalog+inventory), `orders` (manual-payment + billing + tracking),
   `analytics`, `account` (wishlists + location), `settings` (billing template), `uploads`.
 - `scripts/seed.js` — admin user, default statuses, sample category/products.
 

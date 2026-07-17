@@ -6,4 +6,5 @@ const staff = [authenticate, requireStaff];
 const r = Router();
 r.get('/', ...staff, asyncHandler(c.list));
 r.get('/:id', ...staff, asyncHandler(c.detail));
+r.delete('/:id', ...staff, asyncHandler(c.remove));
 module.exports = r;

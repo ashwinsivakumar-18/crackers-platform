@@ -1,0 +1,26 @@
+
+/* ---- help & support ---- */
+.support-contact{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
+.sc-actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.sc-btn{display:inline-flex;align-items:center;gap:7px;border-radius:10px;padding:10px 14px;font-weight:700;font-size:13.5px;text-decoration:none}
+.sc-btn.call{background:var(--ink);color:#fff}
+.sc-btn.wa{background:#25D366;color:#fff}
+.support-form{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.sf-head{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)}
+.field.ta{resize:vertical;min-height:110px;font-family:inherit}
+.support-done{text-align:center;padding:40px 16px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
+.support-done svg{color:var(--green)}.support-done h3{color:var(--ink);margin:0}
+
+/* ---- polish: cards, buttons, footer ---- */
+.card{transition:transform .15s ease, box-shadow .15s ease}
+.card:hover{transform:translateY(-3px);box-shadow:0 16px 34px -18px rgba(32,22,15,.35)}
+.btn{transition:transform .1s ease, filter .15s ease}
+.btn:hover{filter:brightness(1.03)}
+.btn:active{transform:scale(.985)}
+.hdr{position:sticky;top:0;z-index:30;backdrop-filter:blur(8px)}
+.shop-footer{margin-top:36px;padding:26px 18px 40px;background:var(--ink);color:#fff;text-align:center}
+.sf-brand{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:16px;margin-bottom:12px}
+.sf-links{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.sf-links button{background:rgba(255,255,255,.1);border:0;color:#fff;font-family:inherit;font-weight:600;font-size:13px;padding:9px 14px;border-radius:9px;cursor:pointer}
+.sf-links button:hover{background:rgba(255,255,255,.18)}
+.sf-note{color:rgba(255,255,255,.7);font-size:12.5px}

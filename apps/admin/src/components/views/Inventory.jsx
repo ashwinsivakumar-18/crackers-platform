@@ -1,6 +1,6 @@
 
 import { useMemo, useRef, useState } from 'react';
-import { Plus, X, Pencil, Boxes, ImagePlus, Package } from 'lucide-react';
+import { Plus, X, Pencil, Boxes, ImagePlus, Package, Check, Trash2 } from 'lucide-react';
 
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
@@ -12,6 +12,7 @@ const actualOf = (p) => p.display?.mrp ?? p.mrp;
 const sellOf = (p) => p.display?.sellingPrice ?? p.sellingPrice;
 const pctOf = (p) => p.display?.savedPercent ?? (p.mrp ? Math.round((p.mrp - p.sellingPrice) / p.mrp * 100) : 0);
 const thumbOf = (p) => p.images?.find((i) => i.isPrimary)?.url ?? p.images?.[0]?.url;
+const LOW_STOCK = 10;
 
 export default function Inventory() {
   const cats = useAsync(() => api.products.categories(), []);
@@ -19,8 +20,16 @@ export default function Inventory() {
   const [selected, setSelected] = useState(null);
   const [addCat, setAddCat] = useState(false);
   const [editProd, setEditProd] = useState(null);
+  const [renaming, setRenaming] = useState(false);
+  const [catName, setCatName] = useState('');
+  const [delCat, setDelCat] = useState(false);
+  const [catBusy, setCatBusy] = useState(false);
+  const [catErr, setCatErr] = useState(null);
 
   const reload = () => {cats.reload();prods.reload();};
+
+  const saveCatName = async () => { if (!catName.trim()) return; setCatBusy(true); try { await api.products.updateCategory(activeCat, { name: catName.trim() }); setRenaming(false); await reload(); } finally { setCatBusy(false); } };
+  const removeCat = async () => { setCatBusy(true); setCatErr(null); try { await api.products.deleteCategory(activeCat); setDelCat(false); setSelected(null); await reload(); } catch (e) { setCatErr(e instanceof Error ? e.message : 'Could not delete'); } finally { setCatBusy(false); } };
 
   const all = prods.data?.items ?? [];
   const categories = cats.data?.categories ?? [];
@@ -63,9 +72,30 @@ export default function Inventory() {
               // eslint-disable-next-line @next/next/no-img-element
               <img className="thumb" src={activeCategory.image} alt={activeCategory.name} /> :
               <span className="thumb"><Boxes size={20} /></span>}
-                <div style={{ flex: 1 }}><h3>{activeCategory.name}</h3><div className="muted sm">{inCat.length} product{inCat.length !== 1 ? 's' : ''}</div></div>
+                <div style={{ flex: 1 }}>
+                  {renaming ? (
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input className="field" style={{ padding: 8, maxWidth: 240 }} autoFocus value={catName} onChange={(e) => setCatName(e.target.value)} />
+                      <button className="icon-btn sm" disabled={catBusy} onClick={saveCatName}><Check size={14} /></button>
+                      <button className="icon-btn sm" onClick={() => setRenaming(false)}><X size={14} /></button>
+                    </div>
+                  ) : (
+                    <><h3>{activeCategory.name}</h3><div className="muted sm">{inCat.length} product{inCat.length !== 1 ? 's' : ''}</div></>
+                  )}
+                </div>
+                {!renaming && <button className="icon-btn" title="Rename category" onClick={() => { setCatName(activeCategory.name); setRenaming(true); }}><Pencil size={15} /></button>}
+                {!renaming && <button className="icon-btn" title="Delete category" onClick={() => { setDelCat(true); setCatErr(null); }}><Trash2 size={15} /></button>}
                 <button className="btn btn-ember" onClick={() => setEditProd('new')}><Plus size={16} /> Add product</button>
               </div>
+              {delCat && (
+                <div className="confirm-del" style={{ marginBottom: 14 }}>
+                  <p className="muted sm">Delete category “{activeCategory.name}”? {catErr ? <span style={{ color: 'var(--ember)' }}>{catErr}</span> : 'Works only if it has no products.'}</p>
+                  <div className="cd-actions">
+                    <button className="btn btn-ghost" onClick={() => setDelCat(false)}>Cancel</button>
+                    <button className="btn btn-danger" disabled={catBusy} onClick={removeCat}>{catBusy ? 'Deleting…' : 'Delete category'}</button>
+                  </div>
+                </div>
+              )}
 
               <table className="tbl">
                 <thead><tr><th></th><th>Product</th><th>MRP (actual)</th><th>Discount</th><th>Offer price</th><th>Stock</th><th></th></tr></thead>
@@ -82,7 +112,7 @@ export default function Inventory() {
                       <td className="mono strike">{rupee(actualOf(p))}</td>
                       <td className="mono">{pctOf(p)}%</td>
                       <td className="mono" style={{ fontWeight: 700, color: 'var(--ember)' }}>{rupee(sellOf(p))}</td>
-                      <td className="mono">{p.stock === 0 ? <span style={{ color: 'var(--ember)', fontWeight: 600 }}>Out</span> : p.stock}</td>
+                      <td><StockCell p={p} onSaved={reload} /></td>
                       <td><button className="icon-btn sm" onClick={() => setEditProd(p)}><Pencil size={15} /></button></td>
                     </tr>
                 )}
@@ -244,4 +274,27 @@ function ProductModal({ categoryId, product, onClose, onSaved
       </div>
     </>);
 
+}
+
+// Inline stock management — click to set new stock; flags Low / Out.
+function StockCell({ p, onSaved }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(String(p.stock ?? 0));
+  const [busy, setBusy] = useState(false);
+  const save = async () => { setBusy(true); try { await api.products.update(p.id, { stock: Number(val) || 0 }); setEditing(false); await onSaved(); } finally { setBusy(false); } };
+  if (editing) {
+    return (
+      <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <input className="field mono" style={{ width: 70, padding: 6 }} autoFocus value={val} onChange={(e) => setVal(e.target.value.replace(/\D/g, ''))} />
+        <button className="icon-btn sm" disabled={busy} onClick={save}><Check size={14} /></button>
+      </span>
+    );
+  }
+  const low = p.stock > 0 && p.stock <= LOW_STOCK;
+  return (
+    <span onClick={() => { setVal(String(p.stock ?? 0)); setEditing(true); }} style={{ cursor: 'pointer' }} title="Click to update stock">
+      {p.stock === 0 ? <span className="stk out">Out of stock</span> : <span className="mono">{p.stock}{low && <span className="stk low">Low</span>}</span>}
+      <span className="muted sm"> edit</span>
+    </span>
+  );
 }
