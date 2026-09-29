@@ -1,3 +1,8 @@
+const path = require('path');
+// Load apps/api/.env no matter which folder the process started from (fixes
+// `npm run dev:api` / `npm run seed` run from the repo root). In Docker, env_file
+// already sets these vars and dotenv won't override them — so this is safe everywhere.
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 require('dotenv').config();
 
 function req(name, fallback) {

@@ -1,4 +1,4 @@
-const { Product, Category } = require('../../models');
+const { Product, Category, User, Review } = require('../../models');
 const { calculatePrice } = require('../../utils/pricing');
 const { parsePagination, buildMeta } = require('../../utils/pagination');
 const { slugify } = require('../../utils/ids');
@@ -51,6 +51,19 @@ const productService = {
     product.sellingPrice = pf.sellingPrice;
     await product.save();
     return { product: withDisplay(product) };
+  },
+
+  async deleteProduct(id) {
+    const product = await Product.findByIdAndDelete(id);
+    if (!product) throw ApiError.notFound('Product not found');
+
+    // Orders keep their product name, SKU and price snapshots for accounting/history.
+    // Remove references that should no longer appear in customer-facing features.
+    await Promise.all([
+      User.updateMany({}, { $pull: { 'wishlists.$[].productIds': product._id } }),
+      Review.deleteMany({ productId: product._id }),
+    ]);
+    return { deleted: true };
   },
 
   async categories() {

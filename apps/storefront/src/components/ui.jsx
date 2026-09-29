@@ -1,5 +1,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
+import { ShoppingBag } from 'lucide-react';
+import PageIntro from './PageIntro';
 
 export function useAsync(fn, deps = []) {
   const [data, setData] = useState(null);
@@ -28,3 +30,16 @@ export const ErrorState = ({ message, onRetry }) =>
     <div>{message}</div>
     {onRetry && <button className="btn" onClick={onRetry}>Retry</button>}
   </div>;
+export function SignInRequired({ onSignIn, what = 'this' }) {
+  return (
+    <div className="cust-page">
+      <PageIntro icon={ShoppingBag} eyebrow="YOUR PERSONAL CORNER" title="Welcome to your celebrations.">Sign in to keep your orders, saved favourites and delivery updates together.</PageIntro>
+      <div className="empty-c" style={{ textAlign: 'center' }}>
+        <ShoppingBag size={36} />
+        <h3>Make yourself at home.</h3>
+        <p>Please sign in to see {what}.</p>
+        <button className="btn btn-ember" style={{ marginTop: 12 }} onClick={onSignIn}>Sign in</button>
+      </div>
+    </div>
+  );
+}

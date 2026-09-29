@@ -23,7 +23,7 @@ const productSchema = new Schema({
   discountType: { type: String, enum: ['NONE', 'PERCENT', 'AMOUNT'], default: 'NONE' },
   discountPercent: { type: Number, default: 0 },
   discountAmount: { type: Number, default: 0 },
-  stock: { type: Number, default: 0 },
+  stock: { type: Number, default: 100 },
   images: [imageSchema],
   ratingAvg: { type: Number, default: 0 },
   reviewCount: { type: Number, default: 0 },

@@ -4,13 +4,14 @@ import { api } from '../api';
 import { theme, rupee } from '../theme';
 import { useAuth } from '../state/auth';
 
+const MIN_BOXES = 150;
 const TIERS = [
-  { items: 15, price: 150, code: 'CSE-38' },
-  { items: 20, price: 215, code: 'CSE-34' },
-  { items: 30, price: 310, code: 'CSE-32' },
-  { items: 40, price: 490, code: 'CSE-14' },
-  { items: 50, price: 680, code: 'CSE-12' },
-];
+  { items: 15, basePrice: 165, code: 'CSE-38' },
+  { items: 20, basePrice: 235, code: 'CSE-34' },
+  { items: 30, basePrice: 340, code: 'CSE-32' },
+  { items: 40, basePrice: 540, code: 'CSE-14' },
+  { items: 50, basePrice: 750, code: 'CSE-12' },
+].map((tier) => ({ ...tier, price: Math.round(tier.basePrice * 1.12) }));
 
 export default function BulkOrdersScreen() {
   const { user } = useAuth();
@@ -40,7 +41,7 @@ export default function BulkOrdersScreen() {
           <Text style={s.tierPrice}>{rupee(t.price)}</Text>
         </View>
       ))}
-      <Text style={[s.muted, { marginTop: 6 }]}>Prices are indicative. Send an enquiry for an exact quote.</Text>
+      <Text style={[s.muted, { marginTop: 6 }]}>Minimum bulk order: {MIN_BOXES} boxes.</Text>
 
       {sent ? (
         <View style={s.done}><Text style={{ fontSize: 40 }}>✅</Text><Text style={s.doneTitle}>Enquiry sent!</Text><Text style={s.muted}>We'll reach out with a custom quote soon.</Text></View>

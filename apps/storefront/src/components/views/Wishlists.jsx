@@ -1,11 +1,20 @@
+import { useAuth } from '../../lib/auth';
 import { useState } from 'react';
 import { Heart, Plus, Trash2, ShoppingBag, Sparkles } from 'lucide-react';
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
-import { useAsync, Loading, ErrorState } from '../ui';
+import { useAsync, Loading, ErrorState, SignInRequired } from '../ui';
 import { useCart } from '../../lib/cart';
+import PageIntro from '../PageIntro';
 
-export default function Wishlists() {
+export default function Wishlists({ onSignIn }) {
+  const { user, ready } = useAuth();
+  if (!ready) return <Loading />;
+  if (!user) return <SignInRequired onSignIn={onSignIn} what="your wishlists" />;
+  return <WishlistContent />;
+}
+
+function WishlistContent() {
   const { data, loading, error, reload } = useAsync(() => api.account.wishlists(), []);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -23,10 +32,10 @@ export default function Wishlists() {
 
   return (
     <div className="cust-page">
-      <h2 className="page-title">Your wishlists</h2>
+      <PageIntro icon={Heart} eyebrow="SAVE A LITTLE SPARKLE" title="Your favourites, for later.">Create a list for each celebration and keep the products you love close by.</PageIntro>
       <div className="wl-create">
-        <input className="field" placeholder="New list name (e.g. Diwali, Wedding)" value={name} onChange={(e) => setName(e.target.value)} />
-        <button className="btn btn-ember" disabled={busy} onClick={create}><Plus size={16} /> Create</button>
+        <input className="field" aria-label="New wishlist name" placeholder="Name your list, e.g. Diwali favourites" value={name} onChange={(e) => setName(e.target.value)} />
+        <button className="btn btn-ember" disabled={busy || !name.trim()} onClick={create}><Plus size={16} /> Create</button>
       </div>
 
       {data.wishlists.length === 0 && <div className="empty-c"><Heart size={32} /><p>No lists yet. Create one above, then tap the heart on any product.</p></div>}

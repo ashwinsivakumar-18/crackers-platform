@@ -1,4 +1,5 @@
 import { ShoppingCart, MapPin, ClipboardCheck, Smartphone, ShieldCheck, Truck } from 'lucide-react';
+import PageIntro from '../PageIntro';
 
 const STEPS = [
   { icon: ShoppingCart, title: 'Add to cart', text: 'Browse crackers and add what you like. Minimum order is ₹3,500.' },
@@ -12,8 +13,8 @@ const STEPS = [
 export default function HowToOrder() {
   return (
     <div className="cust-page">
-      <h2 className="page-title">How to order</h2>
-      <p className="muted" style={{ marginTop: -8, marginBottom: 18 }}>Ordering is simple — here's the whole flow.</p>
+      <PageIntro icon={ShoppingCart} eyebrow="YOUR CELEBRATION STARTS HERE" title="A few steps to festive joy.">From choosing your favourites to collecting your order, here’s how it works.</PageIntro>
+      <div className="page-facts"><span>Minimum order <b>₹3,500</b></span><span>Payment <b>UPI / bank transfer</b></span><span>Order by <b>October 20</b></span></div>
       <div className="steps-flow">
         {STEPS.map((st, i) => (
           <div className="stepr" key={st.title}>
@@ -25,7 +26,7 @@ export default function HowToOrder() {
           </div>
         ))}
       </div>
-      <p className="muted sm" style={{ marginTop: 18 }}>Payments are manual (UPI / bank transfer) and verified by our team — there's no online payment gateway, so your money always goes straight to us.</p>
+      <div className="page-note"><ShieldCheck size={20} /><p>Keep your payment screenshot handy. Our team verifies your transfer and updates your order status after confirmation.</p></div>
     </div>
   );
 }

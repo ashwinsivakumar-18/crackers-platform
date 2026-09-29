@@ -19,17 +19,29 @@ export default function Inventory() {
   const prods = useAsync(() => api.products.list({ limit: 300 }), []);
   const [selected, setSelected] = useState(null);
   const [addCat, setAddCat] = useState(false);
+  const [editCat, setEditCat] = useState(null);
   const [editProd, setEditProd] = useState(null);
-  const [renaming, setRenaming] = useState(false);
-  const [catName, setCatName] = useState('');
   const [delCat, setDelCat] = useState(false);
   const [catBusy, setCatBusy] = useState(false);
   const [catErr, setCatErr] = useState(null);
+  const [delProd, setDelProd] = useState(null);
+  const [prodBusy, setProdBusy] = useState(false);
+  const [prodErr, setProdErr] = useState(null);
 
   const reload = () => {cats.reload();prods.reload();};
 
-  const saveCatName = async () => { if (!catName.trim()) return; setCatBusy(true); try { await api.products.updateCategory(activeCat, { name: catName.trim() }); setRenaming(false); await reload(); } finally { setCatBusy(false); } };
   const removeCat = async () => { setCatBusy(true); setCatErr(null); try { await api.products.deleteCategory(activeCat); setDelCat(false); setSelected(null); await reload(); } catch (e) { setCatErr(e instanceof Error ? e.message : 'Could not delete'); } finally { setCatBusy(false); } };
+  const removeProduct = async () => {
+    if (!delProd) return;
+    setProdBusy(true); setProdErr(null);
+    try {
+      await api.products.remove(delProd.id);
+      setDelProd(null);
+      await reload();
+    } catch (e) {
+      setProdErr(e instanceof Error ? e.message : 'Could not delete product');
+    } finally { setProdBusy(false); }
+  };
 
   const all = prods.data?.items ?? [];
   const categories = cats.data?.categories ?? [];
@@ -73,18 +85,10 @@ export default function Inventory() {
               <img className="thumb" src={activeCategory.image} alt={activeCategory.name} /> :
               <span className="thumb"><Boxes size={20} /></span>}
                 <div style={{ flex: 1 }}>
-                  {renaming ? (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input className="field" style={{ padding: 8, maxWidth: 240 }} autoFocus value={catName} onChange={(e) => setCatName(e.target.value)} />
-                      <button className="icon-btn sm" disabled={catBusy} onClick={saveCatName}><Check size={14} /></button>
-                      <button className="icon-btn sm" onClick={() => setRenaming(false)}><X size={14} /></button>
-                    </div>
-                  ) : (
-                    <><h3>{activeCategory.name}</h3><div className="muted sm">{inCat.length} product{inCat.length !== 1 ? 's' : ''}</div></>
-                  )}
+                  <h3>{activeCategory.name}</h3><div className="muted sm">{inCat.length} product{inCat.length !== 1 ? 's' : ''}</div>
                 </div>
-                {!renaming && <button className="icon-btn" title="Rename category" onClick={() => { setCatName(activeCategory.name); setRenaming(true); }}><Pencil size={15} /></button>}
-                {!renaming && <button className="icon-btn" title="Delete category" onClick={() => { setDelCat(true); setCatErr(null); }}><Trash2 size={15} /></button>}
+                <button className="icon-btn" title="Edit category name and image" onClick={() => setEditCat(activeCategory)}><Pencil size={15} /></button>
+                <button className="icon-btn" title="Delete category" onClick={() => { setDelCat(true); setCatErr(null); }}><Trash2 size={15} /></button>
                 <button className="btn btn-ember" onClick={() => setEditProd('new')}><Plus size={16} /> Add product</button>
               </div>
               {delCat && (
@@ -113,7 +117,12 @@ export default function Inventory() {
                       <td className="mono">{pctOf(p)}%</td>
                       <td className="mono" style={{ fontWeight: 700, color: 'var(--ember)' }}>{rupee(sellOf(p))}</td>
                       <td><StockCell p={p} onSaved={reload} /></td>
-                      <td><button className="icon-btn sm" onClick={() => setEditProd(p)}><Pencil size={15} /></button></td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button className="icon-btn sm" title="Edit product" onClick={() => setEditProd(p)}><Pencil size={15} /></button>
+                          <button className="icon-btn sm" title="Delete product" onClick={() => { setDelProd(p); setProdErr(null); }}><Trash2 size={15} /></button>
+                        </div>
+                      </td>
                     </tr>
                 )}
                 </tbody>
@@ -125,6 +134,7 @@ export default function Inventory() {
       </div>
 
       {addCat && <CategoryModal onClose={() => setAddCat(false)} onSaved={() => {setAddCat(false);reload();}} />}
+      {editCat && <CategoryModal category={editCat} onClose={() => setEditCat(null)} onSaved={() => {setEditCat(null);reload();}} />}
       {editProd && activeCategory &&
       <ProductModal
         categoryId={activeCategory.id}
@@ -133,8 +143,37 @@ export default function Inventory() {
         onSaved={() => {setEditProd(null);reload();}} />
 
       }
+      {delProd && (
+        <ConfirmProductDelete
+          product={delProd}
+          busy={prodBusy}
+          error={prodErr}
+          onCancel={() => { if (!prodBusy) setDelProd(null); }}
+          onConfirm={removeProduct}
+        />
+      )}
     </div>);
 
+}
+
+function ConfirmProductDelete({ product, busy, error, onCancel, onConfirm }) {
+  return (
+    <>
+      <div className="scrim" onClick={onCancel} />
+      <div className="modal" style={{ width: 440 }}>
+        <div className="modal-head"><span>Delete product</span><button className="icon-btn" disabled={busy} onClick={onCancel}><X size={18} /></button></div>
+        <div className="modal-body">
+          <p>Delete <b>{product.name}</b> ({product.sku})?</p>
+          <p className="muted sm">It will be removed from the store and customer wishlists. Existing order history will be kept.</p>
+          {error && <p style={{ color: 'var(--ember)', fontSize: 13 }}>{error}</p>}
+          <div className="cd-actions">
+            <button className="btn btn-ghost" disabled={busy} onClick={onCancel}>Cancel</button>
+            <button className="btn btn-danger" disabled={busy} onClick={onConfirm}>{busy ? 'Deleting…' : 'Delete product'}</button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 /* ---------- image picker (uploads to /uploads, returns URL) ---------- */
@@ -151,7 +190,7 @@ function ImagePicker({ url, onUrl }) {
     <div className="dropimg" onClick={() => ref.current?.click()}>
       {url ?
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={url} alt="upload" /> :
+      <><img src={url} alt="upload" /><span>Click to replace image</span></> :
       <><ImagePlus size={22} /><b>{busy ? 'Uploading…' : 'Upload image'}</b><span>PNG or JPG</span></>}
       <input ref={ref} type="file" accept="image/*" hidden onChange={(e) => pick(e.target.files?.[0])} />
     </div>);
@@ -159,15 +198,21 @@ function ImagePicker({ url, onUrl }) {
 }
 
 /* ---------- create / rename a category (with image) ---------- */
-function CategoryModal({ onClose, onSaved }) {
-  const [name, setName] = useState('');
-  const [image, setImage] = useState(null);
+function CategoryModal({ category, onClose, onSaved }) {
+  const editing = !!category;
+  const [name, setName] = useState(category?.name ?? '');
+  const [image, setImage] = useState(category?.image ?? null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
   const save = async () => {
     setBusy(true);setErr(null);
-    try {await api.products.createCategory({ name: name.trim(), image: image ?? undefined });onSaved();}
+    try {
+      const body = { name: name.trim(), image: image ?? undefined };
+      if (editing) await api.products.updateCategory(category.id, body);
+      else await api.products.createCategory(body);
+      onSaved();
+    }
     catch (e) {setErr(e instanceof Error ? e.message : 'Failed');} finally
     {setBusy(false);}
   };
@@ -176,14 +221,14 @@ function CategoryModal({ onClose, onSaved }) {
     <>
       <div className="scrim" onClick={onClose} />
       <div className="modal">
-        <div className="modal-head"><span>New category</span><button className="icon-btn" onClick={onClose}><X size={18} /></button></div>
+        <div className="modal-head"><span>{editing ? 'Edit category' : 'New category'}</span><button className="icon-btn" onClick={onClose}><X size={18} /></button></div>
         <div className="modal-body">
           <div className="field-label">Category name</div>
           <input className="field" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Category A" autoFocus />
           <div className="field-label">Category image</div>
           <ImagePicker url={image} onUrl={setImage} />
           {err && <p style={{ color: 'var(--ember)', fontSize: 13 }}>{err}</p>}
-          <button className="btn btn-ember wide" disabled={!name.trim() || busy} onClick={save}>{busy ? 'Saving…' : 'Create category'}</button>
+          <button className="btn btn-ember wide" disabled={!name.trim() || busy} onClick={save}>{busy ? 'Saving…' : editing ? 'Save category' : 'Create category'}</button>
         </div>
       </div>
     </>);
@@ -200,8 +245,10 @@ function ProductModal({ categoryId, product, onClose, onSaved
   const [mrp, setMrp] = useState(String(product?.mrp ?? ''));
   const [pct, setPct] = useState(String(product ? pctOf(product) : ''));
   const [cost, setCost] = useState(String(product?.costPrice ?? ''));
-  const [stock, setStock] = useState(String(product?.stock ?? ''));
+  const [stock, setStock] = useState(String(product?.stock ?? 100));
   const [image, setImage] = useState(thumbOf(product ?? {}) ?? null);
+  const [description, setDescription] = useState(product?.description ?? '');
+  const [safetyInstructions, setSafetyInstructions] = useState(product?.safetyInstructions ?? '');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
@@ -221,6 +268,8 @@ function ProductModal({ categoryId, product, onClose, onSaved
       mrp: mrpN,
       costPrice: costN,
       stock: Number(stock) || 0,
+      description: description.trim() || undefined,
+      safetyInstructions: safetyInstructions.trim() || undefined,
       discountType: pctN > 0 ? 'PERCENT' : 'NONE',
       discountPercent: pctN > 0 ? pctN : 0,
       images: image ? [{ url: image, isPrimary: true }] : undefined
@@ -257,6 +306,9 @@ function ProductModal({ categoryId, product, onClose, onSaved
             <div><div className="field-label">Cost price (₹) — for profit</div><input className="field mono" value={cost} onChange={(e) => setCost(e.target.value.replace(/\D/g, ''))} placeholder="120" /></div>
             <div><div className="field-label">Stock</div><input className="field mono" value={stock} onChange={(e) => setStock(e.target.value.replace(/\D/g, ''))} placeholder="100" /></div>
           </div>
+
+          <div><div className="field-label">Product description</div><textarea className="field" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe this product for customers" /></div>
+          <div><div className="field-label">Safety instructions (optional)</div><textarea className="field" rows={2} value={safetyInstructions} onChange={(e) => setSafetyInstructions(e.target.value)} placeholder="Safe-use instructions shown in product details" /></div>
 
           {/* live actual vs offer price */}
           <div className="offer-live">
