@@ -27,7 +27,7 @@ function Invoice({ order }) {
   return (
     <div className="invoice">
       <div className="inv-top">
-        <div><div className="inv-store">{STORE}</div><div className="muted sm">Tap to view — this is a demo bill for your records.</div></div>
+        <div><div className="inv-store">{STORE}</div><div className="muted sm">Your order summary</div></div>
         <div className="inv-meta"><div className="mono b">{order.orderNumber}</div><div className="muted sm">{new Date(order.placedAt || order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div></div>
       </div>
       <div className="inv-billto">

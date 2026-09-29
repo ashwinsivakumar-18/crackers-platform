@@ -34,7 +34,7 @@ npm run dev:api                   # http://localhost:4000  (worker: npm run dev:
 
 # 3) web apps (each in its own terminal)
 npm run dev:storefront            # http://localhost:5173
-npm run dev:admin                 # http://localhost:5174  (login 9000000000 / ChangeMe@123)
+npm run dev:admin                 # http://localhost:5174
 
 # 4) mobile
 cd apps/mobile && npm install && npm start   # Expo — scan QR with Expo Go
@@ -48,3 +48,33 @@ Web apps read `VITE_API_URL` (default `http://localhost:4000/api/v1`). The mobil
 - Customer accounts use **email/phone + password** (register, login, forgot-password); staff use password login.
 - Validation uses zod; auth uses JWT + argon2 with refresh-token rotation; uploads go to S3/MinIO
   (env-gated — without keys, a placeholder URL is returned).
+   cd /root/crackers_platform
+   npm run build -w apps/storefront
+   sudo cp -r apps/storefront/dist/* /var/www/crackers-storefront/
+
+
+   # rebuild the ADMIN (you changed admin code)
+npm run build -w apps/admin
+sudo cp -r apps/admin/dist/* /var/www/crackers-admin/
+
+# restart the API (you changed backend code)
+sudo systemctl restart crackers-api
+
+
+
+
+cd /root/crackers_platform
+
+# make sure the API URL is set for the builds (baked in at build time)
+export VITE_API_URL=https://api.sivakumarcrackers.com/api/v1
+
+# build both frontends
+npm run build -w apps/storefront
+npm run build -w apps/admin
+
+# publish the built files
+sudo cp -r apps/storefront/dist/* /var/www/crackers-storefront/
+sudo cp -r apps/admin/dist/* /var/www/crackers-admin/
+
+# restart the API (picks up backend changes)
+sudo systemctl restart crackers-api

@@ -1,16 +1,13 @@
 import { ArrowLeft, Sparkles, ShieldCheck, Truck, HeartHandshake } from 'lucide-react';
+import PageIntro from '../PageIntro';
 
 export default function About({ onBack }) {
   return (
     <div className="cust-page about">
       <button className="back" onClick={onBack}><ArrowLeft size={16} /> Back to shop</button>
-      <div className="about-hero">
-        <span className="about-mark"><Sparkles size={22} /></span>
-        <h2>Sivakumar Crackers</h2>
-        <p className="muted">Safe, joyful celebrations — delivered to your doorstep.</p>
-      </div>
+      <PageIntro icon={Sparkles} eyebrow="THE PEOPLE BEHIND YOUR CELEBRATION" title="A little sparkle. A personal touch.">Sivakumar Crackers · Festive favourites from Sivakasi.</PageIntro>
 
-      <p>We're a family-run crackers business bringing you quality sparklers, flower pots, gift boxes and festival combos at honest prices, straight from the manufacturers.</p>
+      <div className="story-panel"><span className="section-kicker">OUR STORY</span><h3>Made for moments together.</h3><p>We're a family-run crackers business bringing you sparklers, flower pots, gift boxes and festival favourites, straight from the manufacturers. Whether you’re planning a family celebration or gifts for your whole team, we’re here to help you choose.</p></div>
 
       <div className="about-points">
         <div className="ap"><ShieldCheck size={18} /><div><b>Genuine & safe</b><span>Quality-checked stock, handled and packed with care.</span></div></div>

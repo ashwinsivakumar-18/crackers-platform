@@ -15,4 +15,5 @@ r.get('/', validate({ query: s.listQuery }), asyncHandler(c.list));
 r.get('/:idOrSlug', asyncHandler(c.get));
 r.post('/', ...staff('product:create'), validate({ body: s.productCreate }), asyncHandler(c.create));
 r.patch('/:id', ...staff('product:update'), validate({ body: s.productUpdate }), asyncHandler(c.update));
+r.delete('/:id', ...staff('product:update'), asyncHandler(c.deleteProduct));
 module.exports = r;

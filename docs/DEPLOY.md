@@ -44,7 +44,8 @@ docker compose -f docker-compose.prod.yml ps      # all "running"
 ```bash
 docker compose -f docker-compose.prod.yml exec api npm run seed
 ```
-Open `https://admin.yourstore.in`, log in `9000000000 / ChangeMe@123`, change the password.
+Open `https://admin.yourstore.in` and log in with the `ADMIN_MOBILE` and
+`ADMIN_PASSWORD` values configured before seeding.
 
 Live: storefront `https://yourstore.in`, admin `https://admin.yourstore.in`.
 

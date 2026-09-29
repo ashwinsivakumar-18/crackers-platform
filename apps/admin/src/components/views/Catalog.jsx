@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, Trash2, X } from 'lucide-react';
 import { api } from '../../lib/api';
 import { rupee } from '../../lib/format';
 import { useAsync, Loading, ErrorState } from '../ui';
@@ -8,6 +8,21 @@ import { useAsync, Loading, ErrorState } from '../ui';
 export default function Catalog() {
   const { data, loading, error, reload } = useAsync(() => api.products.list({ limit: 100 }), []);
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+
+  const remove = async () => {
+    if (!deleting) return;
+    setBusy(true); setDeleteError(null);
+    try {
+      await api.products.remove(deleting.id);
+      setDeleting(null);
+      reload();
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : 'Could not delete product');
+    } finally { setBusy(false); }
+  };
 
   return (
     <div className="stack">
@@ -18,7 +33,7 @@ export default function Catalog() {
       {loading ? <Loading /> : error || !data ? <ErrorState message={error ?? 'No data'} onRetry={reload} /> :
       <div className="panel p0">
           <table className="tbl">
-            <thead><tr><th>Product</th><th>SKU</th><th>MRP</th><th>Selling</th><th>Stock</th></tr></thead>
+            <thead><tr><th>Product</th><th>SKU</th><th>MRP</th><th>Selling</th><th>Stock</th><th></th></tr></thead>
             <tbody>
               {data.items.map((p) =>
             <tr key={p.id}>
@@ -27,6 +42,7 @@ export default function Catalog() {
                   <td className="mono strike">{rupee(p.display?.mrp ?? p.mrp)}</td>
                   <td className="mono">{rupee(p.display?.sellingPrice ?? p.sellingPrice)}</td>
                   <td className="mono">{p.stock === 0 ? <span style={{ color: 'var(--ember)', fontWeight: 600 }}>Out</span> : p.stock}</td>
+                  <td><button className="icon-btn sm" title="Delete product" onClick={() => { setDeleting(p); setDeleteError(null); }}><Trash2 size={15} /></button></td>
                 </tr>
             )}
             </tbody>
@@ -36,6 +52,23 @@ export default function Catalog() {
       }
 
       {creating && <CreateProduct onClose={() => setCreating(false)} onCreated={() => {setCreating(false);reload();}} />}
+      {deleting && (
+        <>
+          <div className="scrim" onClick={() => { if (!busy) setDeleting(null); }} />
+          <div className="modal" style={{ width: 440 }}>
+            <div className="modal-head"><span>Delete product</span><button className="icon-btn" disabled={busy} onClick={() => setDeleting(null)}><X size={18} /></button></div>
+            <div className="modal-body">
+              <p>Delete <b>{deleting.name}</b> ({deleting.sku})?</p>
+              <p className="muted sm">It will be removed from the store and customer wishlists. Existing order history will be kept.</p>
+              {deleteError && <p style={{ color: 'var(--ember)', fontSize: 13 }}>{deleteError}</p>}
+              <div className="cd-actions">
+                <button className="btn btn-ghost" disabled={busy} onClick={() => setDeleting(null)}>Cancel</button>
+                <button className="btn btn-danger" disabled={busy} onClick={remove}>{busy ? 'Deleting…' : 'Delete product'}</button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>);
 
 }

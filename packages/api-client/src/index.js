@@ -24,6 +24,7 @@ export function createApi({ baseUrl, tokens }) {
       deleteCategory: (id) => c.del(`/products/categories/${id}`),
       create: (body) => c.post('/products', body),
       update: (id, body) => c.patch(`/products/${id}`, body),
+      remove: (id) => c.del(`/products/${id}`),
     },
     orders: {
       place: (body) => c.post('/orders', body),
@@ -70,6 +71,7 @@ export function createApi({ baseUrl, tokens }) {
       getPublic: () => c.get('/settings/public'),
       getBilling: () => c.get('/settings/billing'),
       updateBilling: (body) => c.put('/settings/billing', body),
+      setBranding: (body) => c.put('/settings/branding', body),
     },
     uploads: { image: (file, prefix = 'uploads') => c.upload(file, prefix) },
   };
